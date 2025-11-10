@@ -3,6 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --tg-mini-app-width: 422px;
+  --tg-mini-app-height: 625px;
 }
 
 @theme inline {
@@ -19,8 +21,39 @@
   }
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html,
 body {
-  background: var(--background);
+  width: 100%;
+  max-width: var(--tg-mini-app-width);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+}
+
+body {
+  background: linear-gradient(to bottom, #eff6ff, #ffffff);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(to bottom, #111827, #000000);
+  }
+}
+
+#__next {
+  width: 100%;
+  max-width: var(--tg-mini-app-width);
+  min-height: 100vh;
+  margin: 0 auto;
 }

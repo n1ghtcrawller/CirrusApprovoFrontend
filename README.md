@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Cirrus Approvo Frontend
 
-## Getting Started
+Frontend приложение для системы управления заявками на строительных объектах. Работает как Telegram Mini App.
 
-First, run the development server:
+## 🚀 Быстрый старт
+
+### Установка зависимостей
+
+```bash
+npm install
+```
+
+### Настройка переменных окружения
+
+Создайте файл `.env.local` в корне проекта:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+### Запуск в режиме разработки
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откройте [http://localhost:3000](http://localhost:3000) в браузере.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### Сборка для продакшена
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## 📱 Использование как Telegram Mini App
 
-To learn more about Next.js, take a look at the following resources:
+1. Убедитесь, что бэкенд запущен и доступен
+2. Настройте Telegram Bot через [@BotFather](https://t.me/botfather)
+3. Добавьте URL вашего приложения в настройки бота
+4. Откройте бота в Telegram и запустите Mini App
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🏗️ Структура проекта
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/app/
+├── components/          # Переиспользуемые компоненты
+│   ├── customButton.js  # Кастомная кнопка
+│   ├── hapticFeedback.js # Тактильная обратная связь
+│   ├── Navigation.js    # Навигация между страницами
+│   ├── TelegramInit.js  # Инициализация Telegram Web App
+│   ├── telegramWebApp.js # Утилиты для Telegram Web App
+│   └── useTelegramWebApp.js # Хук для работы с Telegram
+├── context/             # React контексты
+│   └── AuthContext.js   # Контекст аутентификации
+├── lib/                 # Утилиты и библиотеки
+│   └── api.js           # API клиент
+├── projects/            # Страницы проектов
+│   ├── page.js          # Список проектов
+│   ├── new/             # Создание проекта
+│   └── [id]/            # Детали проекта
+├── requests/            # Страницы заявок
+│   ├── page.js          # Список заявок
+│   ├── new/             # Создание заявки
+│   └── [id]/            # Детали заявки
+├── profile/             # Страница профиля
+├── page.js              # Главная страница (авторизация)
+├── layout.js            # Корневой layout
+└── globals.css          # Глобальные стили
+```
 
-## Deploy on Vercel
+## 🔑 Основные функции
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- ✅ Авторизация через Telegram Web App
+- ✅ Управление проектами (объектами)
+- ✅ Создание и управление заявками
+- ✅ Загрузка и скачивание документов
+- ✅ Пошаговое согласование заявок
+- ✅ Ролевой доступ
+- ✅ Профиль пользователя
+- ✅ Тактильная обратная связь (haptic feedback)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎨 Технологии
+
+- **Next.js 16** - React фреймворк
+- **Tailwind CSS 4** - Стилизация
+- **Telegram Web App API** - Интеграция с Telegram
+- **React Context** - Управление состоянием
+
+## 📚 API
+
+Приложение работает с бэкенд API. Подробная документация API находится в файле документации бэкенда.
+
+Базовый URL API настраивается через переменную окружения `NEXT_PUBLIC_API_URL`.
+
+## 🔐 Аутентификация
+
+Аутентификация происходит через Telegram Web App:
+1. Пользователь нажимает "Войти"
+2. Приложение получает `init_data` от Telegram
+3. Отправляется запрос на `/auth/telegram-login`
+4. Сохраняется JWT токен в localStorage
+5. Токен используется для всех последующих запросов
+
+## 📄 Лицензия
+
+Приватный проект.

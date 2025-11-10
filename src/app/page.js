@@ -1,63 +1,91 @@
+"use client";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
+import cirrus from "@/app/assets/cirrus.png";
+import haptic from "@/app/components/hapticFeedback";
+import CustomButton from "@/app/components/customButton";
+import { useAuth } from "@/app/context/AuthContext";
+import useTelegramWebApp from "@/app/components/useTelegramWebApp";
 
 export default function Home() {
+  const router = useRouter();
+  const { login, isAuthenticated, loading } = useAuth();
+  const tg = useTelegramWebApp();
+  const [authLoading, setAuthLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Если уже авторизован, перенаправляем на проекты
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.push("/projects");
+    }
+  }, [isAuthenticated, loading, router]);
+
+  const handleAuth = async () => {
+    try {
+      setAuthLoading(true);
+      setError(null);
+      haptic.medium();
+
+      // Получаем initData из Telegram
+      if (!tg.isAvailable) {
+        throw new Error("Telegram Web App не доступен. Откройте приложение через Telegram.");
+      }
+
+      const initData = tg.getInitData();
+      if (!initData) {
+        throw new Error("Не удалось получить данные Telegram. Попробуйте перезагрузить страницу.");
+      }
+
+      // Авторизуемся
+      await login(initData);
+      
+      // Успешная авторизация - перенаправление произойдет автоматически через useEffect
+      haptic.success();
+    } catch (err) {
+      console.error("Auth error:", err);
+      setError(err.message || "Ошибка авторизации");
+      haptic.error();
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen w-full max-w-[422px] items-center justify-center font-sans">
+        <div className="text-gray-600 dark:text-gray-400">Загрузка...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+    <div className="flex min-h-screen w-full max-w-[422px] items-center justify-center font-sans">
+      <main className="flex h-full w-full flex-col items-center justify-center px-6 py-8">
+        <div className="flex flex-col items-center gap-8 w-full">
+          {/* Логотип/Название */}
+          <div className="flex flex-col items-center gap-4">
+            <Image src={cirrus} alt="Cirrus Approvo" width={80} height={80} />
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Cirrus Approvo
+            </h1>
+            <p className="text-base text-gray-600 dark:text-gray-400 text-center max-w-xs">
+              Платформа для утверждения и управления документами
+            </p>
+          </div>
+
+          {/* Ошибка */}
+          {error && (
+            <div className="w-full p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+            </div>
+          )}
+
+          {/* Кнопка авторизации */}
+          <CustomButton onClick={handleAuth} disabled={authLoading}>
+            {authLoading ? "Вход..." : "Войти"}
+          </CustomButton>
         </div>
       </main>
     </div>
