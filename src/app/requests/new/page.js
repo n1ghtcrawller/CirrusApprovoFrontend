@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { requests, objects } from "@/app/lib/api";
@@ -8,7 +8,7 @@ import haptic from "@/app/components/hapticFeedback";
 import CustomButton from "@/app/components/customButton";
 import Navigation from "@/app/components/Navigation";
 
-export default function NewRequestPage() {
+function NewRequestForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuth();
@@ -278,6 +278,18 @@ export default function NewRequestPage() {
       </div>
       <Navigation />
     </div>
+  );
+}
+
+export default function NewRequestPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen w-full max-w-[422px] items-center justify-center">
+        <div className="text-gray-600 dark:text-gray-400">Загрузка...</div>
+      </div>
+    }>
+      <NewRequestForm />
+    </Suspense>
   );
 }
 
