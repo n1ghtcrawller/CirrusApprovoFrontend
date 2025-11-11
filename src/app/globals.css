@@ -5,6 +5,10 @@
   --foreground: #171717;
   --tg-mini-app-width: 422px;
   --tg-mini-app-height: 625px;
+  /* Динамические значения вьюпорта Telegram/Web */
+  --tg-viewport-height: 100dvh;
+  --tg-viewport-stable-height: 100dvh;
+  --tg-viewport-width: 100vw;
 }
 
 @theme inline {
@@ -27,9 +31,11 @@
 
 html,
 body {
+  /* Адаптация под ширину экрана */
   width: 100%;
-  max-width: var(--tg-mini-app-width);
-  min-height: 100vh;
+  max-width: min(var(--tg-mini-app-width), var(--tg-viewport-width));
+  /* Адаптация под высоту экрана */
+  min-height: var(--tg-viewport-height);
   margin: 0 auto;
   padding: 0;
   overflow-x: hidden;
@@ -53,7 +59,7 @@ body {
 
 #__next {
   width: 100%;
-  max-width: var(--tg-mini-app-width);
-  min-height: 100vh;
+  max-width: min(var(--tg-mini-app-width), var(--tg-viewport-width));
+  min-height: var(--tg-viewport-height);
   margin: 0 auto;
 }
