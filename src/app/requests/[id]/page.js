@@ -131,7 +131,7 @@ export default function RequestDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen w-full max-w-[422px] items-center justify-center">
+      <div className="flex min-h-screen w-full items-center justify-center">
         <div className="text-gray-600 dark:text-gray-400">Загрузка...</div>
       </div>
     );
@@ -139,8 +139,8 @@ export default function RequestDetailPage() {
 
   if (error && !request) {
     return (
-      <div className="flex min-h-screen w-full max-w-[422px] flex-col pb-20">
-        <div className="flex-1 px-4 py-6">
+      <div className="flex min-h-screen w-full  flex-col pb-20">
+        <div className="flex-1 px-3 py-4">
           <button
             onClick={() => {
               haptic.light();
@@ -163,8 +163,8 @@ export default function RequestDetailPage() {
   const canUpdateStatus = nextAction && (nextAction.role === "any" || true); // TODO: Проверка роли
 
   return (
-    <div className="flex min-h-screen w-full max-w-[422px] flex-col pb-20">
-      <div className="flex-1 px-4 py-6">
+    <div className="flex min-h-screen w-full  flex-col pb-20">
+      <div className="flex-1 px-3 py-4">
         <button
           onClick={() => {
             haptic.light();

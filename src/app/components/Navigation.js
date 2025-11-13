@@ -23,8 +23,8 @@ export default function Navigation() {
   ];
 
   return (
-    <nav className="w-full max-w-[422px] fixed bottom-0 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 z-50">
-      <div className="flex items-center justify-around px-4 py-2">
+    <nav className="w-full fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 z-50">
+      <div className="flex items-center justify-around px-2 py-2 max-w-full">
         {navItems.map((item) => {
           const isActive = pathname === item.path || pathname?.startsWith(item.path + "/");
           return (
@@ -34,7 +34,7 @@ export default function Navigation() {
                 haptic.light();
                 router.push(item.path);
               }}
-              className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+              className={`flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors ${
                 isActive
                   ? "text-blue-600 dark:text-blue-400"
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"

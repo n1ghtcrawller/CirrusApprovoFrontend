@@ -123,8 +123,8 @@ function NewRequestForm() {
   }
 
   return (
-    <div className="flex min-h-screen w-full max-w-[422px] flex-col pb-20">
-      <div className="flex-1 px-4 py-6">
+    <div className="flex min-h-screen w-full flex-col pb-20">
+      <div className="flex-1 px-3 py-4">
         <button
           onClick={() => {
             haptic.light();
@@ -287,7 +287,7 @@ function NewRequestForm() {
 export default function NewRequestPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen w-full max-w-[422px] items-center justify-center">
+      <div className="flex min-h-screen w-full items-center justify-center">
         <div className="text-gray-600 dark:text-gray-400">Загрузка...</div>
       </div>
     }>

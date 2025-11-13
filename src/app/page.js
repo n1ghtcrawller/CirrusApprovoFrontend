@@ -54,15 +54,15 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen w-full max-w-[422px] items-center justify-center font-sans">
+      <div className="flex min-h-screen w-full  items-center justify-center font-sans">
         <div className="text-gray-600 dark:text-gray-400">Загрузка...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen w-full max-w-[422px] items-center justify-center font-sans">
-      <main className="flex h-full w-full flex-col items-center justify-center px-6 py-8">
+    <div className="flex min-h-screen w-full items-center justify-center font-sans">
+      <main className="flex h-full w-full flex-col items-center justify-center px-4 py-6">
         <div className="flex flex-col items-center gap-8 w-full">
           {/* Логотип/Название */}
           <div className="flex flex-col items-center gap-4">

@@ -66,7 +66,7 @@ export default function ProfilePage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen w-full max-w-[422px] items-center justify-center">
+      <div className="flex min-h-screen w-full items-center justify-center">
         <div className="text-gray-600 dark:text-gray-400">Загрузка...</div>
       </div>
     );
@@ -77,8 +77,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full max-w-[422px] flex-col pb-20">
-      <div className="flex-1 px-4 py-6">
+    <div className="flex min-h-screen w-full flex-col pb-20">
+      <div className="flex-1 px-3 py-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           Профиль
         </h1>
