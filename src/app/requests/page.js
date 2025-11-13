@@ -7,6 +7,7 @@ import { requests } from "@/app/lib/api";
 import haptic from "@/app/components/hapticFeedback";
 import Navigation from "@/app/components/Navigation";
 import CustomButton from "@/app/components/customButton";
+import { HiPlus } from "react-icons/hi";
 
 const STATUS_LABELS = {
   created: "Создана",
@@ -89,7 +90,10 @@ export default function RequestsPage() {
 
         <div className="mb-4">
           <CustomButton onClick={handleCreateRequest}>
-            + Создать заявку
+            <div className="flex items-center justify-center gap-2">
+              <HiPlus className="text-lg" />
+              <span>Создать заявку</span>
+            </div>
           </CustomButton>
         </div>
 

@@ -7,6 +7,7 @@ import { objects } from "@/app/lib/api";
 import haptic from "@/app/components/hapticFeedback";
 import Navigation from "@/app/components/Navigation";
 import CustomButton from "@/app/components/customButton";
+import { HiPlus } from "react-icons/hi";
 
 export default function ProjectsPage() {
   const router = useRouter();
@@ -82,7 +83,10 @@ export default function ProjectsPage() {
 
         <div className="mb-4">
           <CustomButton onClick={handleCreateProject}>
-            + Создать проект
+            <div className="flex items-center justify-center gap-2">
+              <HiPlus className="text-lg" />
+              <span>Создать проект</span>
+            </div>
           </CustomButton>
         </div>
 

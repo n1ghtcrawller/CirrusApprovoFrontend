@@ -7,6 +7,7 @@ import { requests, documents } from "@/app/lib/api";
 import haptic from "@/app/components/hapticFeedback";
 import Navigation from "@/app/components/Navigation";
 import CustomButton from "@/app/components/customButton";
+import { HiArrowLeft, HiPlus } from "react-icons/hi";
 
 const STATUS_LABELS = {
   created: "Создана",
@@ -169,9 +170,10 @@ export default function RequestDetailPage() {
             haptic.light();
             router.back();
           }}
-          className="mb-4 text-blue-600 dark:text-blue-400 hover:underline"
+          className="mb-4 flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
         >
-          ← Назад
+          <HiArrowLeft className="text-lg" />
+          <span>Назад</span>
         </button>
 
         {error && (
@@ -233,9 +235,10 @@ export default function RequestDetailPage() {
                     haptic.light();
                     setShowUpload(!showUpload);
                   }}
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                 >
-                  + Загрузить
+                  <HiPlus className="text-base" />
+                  <span>Загрузить</span>
                 </button>
               </div>
 

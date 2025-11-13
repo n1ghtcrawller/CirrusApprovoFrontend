@@ -7,6 +7,7 @@ import { objects } from "@/app/lib/api";
 import haptic from "@/app/components/hapticFeedback";
 import CustomButton from "@/app/components/customButton";
 import Navigation from "@/app/components/Navigation";
+import { HiArrowLeft } from "react-icons/hi";
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -66,9 +67,10 @@ export default function NewProjectPage() {
               haptic.light();
               router.back();
             }}
-            className="mb-4 text-blue-600 dark:text-blue-400 hover:underline"
+            className="mb-4 flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
           >
-            ← Назад
+            <HiArrowLeft className="text-lg" />
+            <span>Назад</span>
           </button>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Создать проект

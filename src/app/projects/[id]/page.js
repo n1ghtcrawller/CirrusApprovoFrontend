@@ -7,6 +7,7 @@ import { objects, requests } from "@/app/lib/api";
 import haptic from "@/app/components/hapticFeedback";
 import Navigation from "@/app/components/Navigation";
 import CustomButton from "@/app/components/customButton";
+import { HiArrowLeft, HiPlus } from "react-icons/hi";
 
 export default function ProjectDetailPage() {
   const router = useRouter();
@@ -103,9 +104,10 @@ export default function ProjectDetailPage() {
             haptic.light();
             router.back();
           }}
-          className="mb-4 text-blue-600 dark:text-blue-400 hover:underline"
+          className="mb-4 flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
         >
-          ← Назад
+          <HiArrowLeft className="text-lg" />
+          <span>Назад</span>
         </button>
 
         <div className="mb-6">
@@ -164,7 +166,10 @@ export default function ProjectDetailPage() {
           </div>
 
           <CustomButton onClick={handleCreateRequest} className="mb-4">
-            + Создать заявку
+            <div className="flex items-center justify-center gap-2">
+              <HiPlus className="text-lg" />
+              <span>Создать заявку</span>
+            </div>
           </CustomButton>
 
           {projectRequests.length === 0 ? (

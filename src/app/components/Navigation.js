@@ -3,6 +3,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import haptic from "@/app/components/hapticFeedback";
+import { HiFolder, HiClipboardList, HiUser } from "react-icons/hi";
 
 export default function Navigation() {
   const router = useRouter();
@@ -16,9 +17,9 @@ export default function Navigation() {
   };
 
   const navItems = [
-    { path: "/projects", label: "Проекты", icon: "📁" },
-    { path: "/requests", label: "Заявки", icon: "📋" },
-    { path: "/profile", label: "Профиль", icon: "👤" },
+    { path: "/projects", label: "Проекты", icon: HiFolder },
+    { path: "/requests", label: "Заявки", icon: HiClipboardList },
+    { path: "/profile", label: "Профиль", icon: HiUser },
   ];
 
   return (
@@ -39,7 +40,7 @@ export default function Navigation() {
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
               }`}
             >
-              <span className="text-xl">{item.icon}</span>
+              <item.icon className="text-xl" />
               <span className="text-xs font-medium">{item.label}</span>
             </button>
           );

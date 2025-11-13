@@ -7,6 +7,7 @@ import { requests, objects } from "@/app/lib/api";
 import haptic from "@/app/components/hapticFeedback";
 import CustomButton from "@/app/components/customButton";
 import Navigation from "@/app/components/Navigation";
+import { HiArrowLeft, HiPlus, HiX } from "react-icons/hi";
 
 function NewRequestForm() {
   const router = useRouter();
@@ -129,9 +130,10 @@ function NewRequestForm() {
             haptic.light();
             router.back();
           }}
-          className="mb-4 text-blue-600 dark:text-blue-400 hover:underline"
+          className="mb-4 flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
         >
-          ← Назад
+          <HiArrowLeft className="text-lg" />
+          <span>Назад</span>
         </button>
 
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
@@ -220,7 +222,7 @@ function NewRequestForm() {
                         onClick={() => removeItem(index)}
                         className="px-3 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                       >
-                        ×
+                        <HiX className="text-lg" />
                       </button>
                     )}
                   </div>
@@ -250,9 +252,10 @@ function NewRequestForm() {
               <button
                 type="button"
                 onClick={addItem}
-                className="w-full py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
+                className="w-full py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 flex items-center justify-center gap-2"
               >
-                + Добавить материал
+                <HiPlus className="text-base" />
+                <span>Добавить материал</span>
               </button>
             </div>
           </div>

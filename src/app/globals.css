@@ -3,8 +3,6 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --tg-mini-app-width: 422px;
-  --tg-mini-app-height: 625px;
   /* Динамические значения вьюпорта Telegram/Web */
   --tg-viewport-height: 100dvh;
   --tg-viewport-stable-height: 100dvh;
