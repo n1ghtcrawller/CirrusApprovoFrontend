@@ -7,19 +7,21 @@ import { objects, requests } from "@/app/lib/api";
 import haptic from "@/app/components/hapticFeedback";
 import Navigation from "@/app/components/Navigation";
 import CustomButton from "@/app/components/customButton";
-import { HiArrowLeft, HiPlus } from "react-icons/hi";
+import useTelegramWebApp from "@/app/components/useTelegramWebApp";
+import { HiPlus } from "react-icons/hi";
 
 export default function ProjectDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { user } = useAuth();
+  const tg = useTelegramWebApp();
   const projectId = params?.id;
   
   const [project, setProject] = useState(null);
   const [projectRequests, setProjectRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showMembers, setShowMembers] = useState(false);
+  const [showMembers, setShowMembers] = useState(true);
 
   useEffect(() => {
     if (projectId) {
@@ -27,6 +29,24 @@ export default function ProjectDetailPage() {
       loadRequests();
     }
   }, [projectId]);
+
+  // Настройка кнопки "Назад" в Telegram
+  useEffect(() => {
+    const handleBack = () => {
+      haptic.light();
+      router.back();
+    };
+
+    if (tg.isAvailable) {
+      tg.showBackButton(handleBack);
+    }
+
+    return () => {
+      if (tg.isAvailable) {
+        tg.hideBackButton();
+      }
+    };
+  }, [tg, router]);
 
   const loadProject = async () => {
     try {
@@ -76,15 +96,6 @@ export default function ProjectDetailPage() {
     return (
       <div className="flex min-h-screen w-full  flex-col pb-20">
         <div className="flex-1 px-3 py-4">
-          <button
-            onClick={() => {
-              haptic.light();
-              router.back();
-            }}
-            className="mb-4 text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            ← Назад
-          </button>
           <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             <p className="text-sm text-red-800 dark:text-red-200">
               {error || "Проект не найден"}
@@ -99,17 +110,6 @@ export default function ProjectDetailPage() {
   return (
     <div className="flex min-h-screen w-full  flex-col pb-20">
       <div className="flex-1 px-3 py-4">
-        <button
-          onClick={() => {
-            haptic.light();
-            router.back();
-          }}
-          className="mb-4 flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          <HiArrowLeft className="text-lg" />
-          <span>Назад</span>
-        </button>
-
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             {project.name}
@@ -123,36 +123,29 @@ export default function ProjectDetailPage() {
 
         {/* Участники */}
         <div className="mb-6">
-          <button
-            onClick={() => {
-              haptic.light();
-              setShowMembers(!showMembers);
-            }}
-            className="w-full p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-left"
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-gray-900 dark:text-white">
-                Участники ({project.members?.length || 0})
-              </span>
-              <span>{showMembers ? "▼" : "▶"}</span>
-            </div>
-          </button>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+            Участники ({project.members?.length || 0})
+          </h2>
           
-          {showMembers && (
-            <div className="mt-2 space-y-2">
-              {project.members?.map((member) => (
+          {project.members && project.members.length > 0 ? (
+            <div className="space-y-2">
+              {project.members.map((member) => (
                 <div
                   key={member.user_id}
-                  className="p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50"
+                  className="p-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
                 >
                   <p className="font-medium text-gray-900 dark:text-white">
-                    {member.user?.first_name} {member.user?.last_name}
+                    {member.user?.first_name || ""} {member.user?.last_name || ""}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {member.role}
                   </p>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+              <p>Участников пока нет</p>
             </div>
           )}
         </div>

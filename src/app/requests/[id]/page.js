@@ -7,7 +7,8 @@ import { requests, documents } from "@/app/lib/api";
 import haptic from "@/app/components/hapticFeedback";
 import Navigation from "@/app/components/Navigation";
 import CustomButton from "@/app/components/customButton";
-import { HiArrowLeft, HiPlus } from "react-icons/hi";
+import useTelegramWebApp from "@/app/components/useTelegramWebApp";
+import { HiPlus } from "react-icons/hi";
 
 const STATUS_LABELS = {
   created: "Создана",
@@ -30,6 +31,7 @@ export default function RequestDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { user } = useAuth();
+  const tg = useTelegramWebApp();
   const requestId = params?.id;
 
   const [request, setRequest] = useState(null);
@@ -46,6 +48,24 @@ export default function RequestDetailPage() {
       loadDocuments();
     }
   }, [requestId]);
+
+  // Настройка кнопки "Назад" в Telegram
+  useEffect(() => {
+    const handleBack = () => {
+      haptic.light();
+      router.back();
+    };
+
+    if (tg.isAvailable) {
+      tg.showBackButton(handleBack);
+    }
+
+    return () => {
+      if (tg.isAvailable) {
+        tg.hideBackButton();
+      }
+    };
+  }, [tg, router]);
 
   const loadRequest = async () => {
     try {
@@ -141,15 +161,6 @@ export default function RequestDetailPage() {
     return (
       <div className="flex min-h-screen w-full  flex-col pb-20">
         <div className="flex-1 px-3 py-4">
-          <button
-            onClick={() => {
-              haptic.light();
-              router.back();
-            }}
-            className="mb-4 text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            ← Назад
-          </button>
           <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
           </div>
@@ -165,17 +176,6 @@ export default function RequestDetailPage() {
   return (
     <div className="flex min-h-screen w-full  flex-col pb-20">
       <div className="flex-1 px-3 py-4">
-        <button
-          onClick={() => {
-            haptic.light();
-            router.back();
-          }}
-          className="mb-4 flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          <HiArrowLeft className="text-lg" />
-          <span>Назад</span>
-        </button>
-
         {error && (
           <div className="mb-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             <p className="text-sm text-red-800 dark:text-red-200">{error}</p>

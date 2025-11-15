@@ -1,23 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { objects } from "@/app/lib/api";
 import haptic from "@/app/components/hapticFeedback";
 import CustomButton from "@/app/components/customButton";
 import Navigation from "@/app/components/Navigation";
-import { HiArrowLeft } from "react-icons/hi";
+import useTelegramWebApp from "@/app/components/useTelegramWebApp";
 
 export default function NewProjectPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const tg = useTelegramWebApp();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
   });
+
+  // Настройка кнопки "Назад" в Telegram
+  useEffect(() => {
+    const handleBack = () => {
+      haptic.light();
+      router.back();
+    };
+
+    if (tg.isAvailable) {
+      tg.showBackButton(handleBack);
+    }
+
+    return () => {
+      if (tg.isAvailable) {
+        tg.hideBackButton();
+      }
+    };
+  }, [tg, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,16 +81,6 @@ export default function NewProjectPage() {
     <div className="flex min-h-screen w-full flex-col pb-20">
       <div className="flex-1 px-3 py-4">
         <div className="mb-6">
-          <button
-            onClick={() => {
-              haptic.light();
-              router.back();
-            }}
-            className="mb-4 flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            <HiArrowLeft className="text-lg" />
-            <span>Назад</span>
-          </button>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Создать проект
           </h1>

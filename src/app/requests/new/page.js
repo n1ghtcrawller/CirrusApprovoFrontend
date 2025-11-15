@@ -7,12 +7,14 @@ import { requests, objects } from "@/app/lib/api";
 import haptic from "@/app/components/hapticFeedback";
 import CustomButton from "@/app/components/customButton";
 import Navigation from "@/app/components/Navigation";
-import { HiArrowLeft, HiPlus, HiX } from "react-icons/hi";
+import useTelegramWebApp from "@/app/components/useTelegramWebApp";
+import { HiPlus, HiX } from "react-icons/hi";
 
 function NewRequestForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuth();
+  const tg = useTelegramWebApp();
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,6 +34,24 @@ function NewRequestForm() {
       loadProjects();
     }
   }, [isAuthenticated]);
+
+  // Настройка кнопки "Назад" в Telegram
+  useEffect(() => {
+    const handleBack = () => {
+      haptic.light();
+      router.back();
+    };
+
+    if (tg.isAvailable) {
+      tg.showBackButton(handleBack);
+    }
+
+    return () => {
+      if (tg.isAvailable) {
+        tg.hideBackButton();
+      }
+    };
+  }, [tg, router]);
 
   const loadProjects = async () => {
     try {
@@ -125,17 +145,6 @@ function NewRequestForm() {
   return (
     <div className="flex min-h-screen w-full flex-col pb-20">
       <div className="flex-1 px-3 py-4">
-        <button
-          onClick={() => {
-            haptic.light();
-            router.back();
-          }}
-          className="mb-4 flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          <HiArrowLeft className="text-lg" />
-          <span>Назад</span>
-        </button>
-
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           Создать заявку
         </h1>
