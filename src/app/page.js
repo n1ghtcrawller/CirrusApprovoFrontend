@@ -1,19 +1,24 @@
+ "use client";
+
+import CustomButton from "./components/СustomButton";
+
 export default function Home() {
+  const handleStart = () => {};
+
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "1rem",
-        padding: "2rem",
-        textAlign: "center",
-      }}
-    >
-      <h1>Welcome to Next.js</h1>
-      <p>Начните с редактирования файла src/app/page.js</p>
+    <main className="flex min-h-screen w-full items-center justify-center bg-[#f6f6f8] px-6">
+      <div className="flex w-full max-w-2xl flex-col items-center justify-center gap-12">
+        <h1 className="w-90 text-start text-7xl font-bold text-[#111827] leading-[0.9]">
+          Cirrus
+          <br />
+          Approvo.
+        </h1>
+        <div className="w-90 flex justify-center">
+          <CustomButton width="100%" onClick={handleStart}>
+            Начать работу
+          </CustomButton>
+        </div>
+      </div>
     </main>
   );
 }
