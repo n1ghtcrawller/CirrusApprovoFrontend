@@ -2,6 +2,7 @@
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import User from "../../../../components/User";
+import CustomDropDownInput from "../../../../components/CustomDropDownInput";
 import { getObjectWithMembers, addObjectMember, removeObjectMember, updateObjectMemberRole } from "../../../../lib/api";
 
 export default function ProjectTeamPage() {
@@ -37,19 +38,19 @@ export default function ProjectTeamPage() {
             // Проверяем, есть ли владелец уже в members, чтобы избежать дубликатов
             if (data.owner) {
                 const ownerInMembers = data.members?.some(m => m.user_id === data.owner.id);
-                const allMembers = ownerInMembers 
+            const allMembers = ownerInMembers 
                     ? (data.members || []).filter(m => m.user) // Фильтруем только тех, у кого есть user
-                    : [
-                        {
-                            object_id: data.id,
-                            user_id: data.owner.id,
-                            role: "director",
-                            created_at: data.created_at,
-                            user: data.owner
-                        },
+                : [
+                    {
+                        object_id: data.id,
+                        user_id: data.owner.id,
+                        role: "director",
+                        created_at: data.created_at,
+                        user: data.owner
+                    },
                         ...(data.members || []).filter(m => m.user) // Фильтруем только тех, у кого есть user
-                    ];
-                setMembers(allMembers);
+                ];
+            setMembers(allMembers);
             } else {
                 // Если нет owner, используем только members
                 setMembers((data.members || []).filter(m => m.user));
@@ -214,16 +215,13 @@ export default function ProjectTeamPage() {
                     {isAddingMember && (
                         <div className="flex flex-col gap-3 rounded-lg bg-[#f6f6f8] p-4">
                             <div className="flex flex-col gap-2">
-                                <label className="text-xs text-[#9CA3AF]">ID пользователя</label>
-                                <input
-                                    type="number"
-                                    value={newMemberData.user_id}
-                                    onChange={(e) => setNewMemberData({ ...newMemberData, user_id: e.target.value })}
-                                    placeholder="5"
-                                    className="w-full rounded-lg bg-white border border-[#E5E7EB] px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
-                                    style={{
-                                        fontFamily: "var(--font-onest), -apple-system, sans-serif",
-                                    }}
+                                <label className="text-xs text-[#9CA3AF]">Пользователь</label>
+                                <CustomDropDownInput
+                                    value={newMemberData.user_id || null}
+                                    onChange={(e) => setNewMemberData({ ...newMemberData, user_id: e.target.value || "" })}
+                                    placeholder="Начните вводить имя, username или ID..."
+                                    excludeUserIds={members.map(m => m.user_id)}
+                                    className="w-full"
                                 />
                             </div>
                             <div className="flex flex-col gap-2">
@@ -246,7 +244,8 @@ export default function ProjectTeamPage() {
                             </div>
                             <button
                                 onClick={handleAddMember}
-                                className="w-full rounded-lg bg-[#111827] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1F2937] transition-colors"
+                                disabled={!newMemberData.user_id || !newMemberData.role}
+                                className="w-full rounded-lg bg-[#111827] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1F2937] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{
                                     fontFamily: "var(--font-onest), -apple-system, sans-serif",
                                 }}

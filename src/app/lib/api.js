@@ -85,6 +85,21 @@ export const updateCurrentUser = async (userData) => {
   return response.data;
 };
 
+/**
+ * Поиск пользователей
+ * @param {string} query - Поисковый запрос (username, имя, telegram_id)
+ * @param {number} limit - Ограничение количества результатов (опционально)
+ * @returns {Promise<Array>}
+ */
+export const searchUsers = async (query, limit = null) => {
+  const params = new URLSearchParams({ q: query });
+  if (limit) {
+    params.append('limit', limit.toString());
+  }
+  const response = await apiClient.get(`/users/search?${params.toString()}`);
+  return response.data;
+};
+
 // ==================== ОБЪЕКТЫ (ПРОЕКТЫ) ====================
 
 /**
