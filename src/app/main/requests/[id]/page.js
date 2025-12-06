@@ -3,6 +3,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { getRequestWithRelations } from "../../../lib/api";
 import CustomButton from "../../../components/СustomButton";
+import Comments from "../../../components/Comments";
 
 export default function RequestDetailPage() {
     const router = useRouter();
@@ -338,6 +339,9 @@ export default function RequestDetailPage() {
                         </div>
                     );
                 })()}
+
+                {/* Комментарии */}
+                <Comments requestId={parseInt(params.id)} />
             </div>
         </main>
     );
