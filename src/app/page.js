@@ -15,7 +15,10 @@ export default function Home() {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
-      window.Telegram.WebApp.requestFullScreen();
+      // Запрашиваем полноэкранный режим, если метод доступен
+      if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
+        window.Telegram.WebApp.requestFullscreen();
+      }
     }
   }, []);
 

@@ -12,11 +12,14 @@ export default function MainLayout({ children }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Инициализация Telegram Web App для полноэкранного режима
+    // Инициализация Telegram Web App для расширения на весь экран
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
-      window.Telegram.WebApp.requestFullScreen();
+      // Запрашиваем полноэкранный режим, если метод доступен
+      if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
+        window.Telegram.WebApp.requestFullscreen();
+      }
     }
   }, []);
 
