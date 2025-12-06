@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import plus from "../../assets/components/plus.svg";
 import Search from "../../components/Search";
 import ProjectList from "../../components/ProjectList";
-import mockProjects from "../../data/mock.json";
+import { getObjects } from "../../lib/api";
 
 export default function Projects() {
     const router = useRouter();
@@ -13,20 +13,18 @@ export default function Projects() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Имитация загрузки данных (в будущем здесь будет API запрос)
         const loadProjects = async () => {
             setIsLoading(true);
             try {
-                // TODO: Заменить на реальный API запрос
-                // const response = await fetch('/api/projects');
-                // const data = await response.json();
-                
-                // Пока используем mock данные
-                await new Promise(resolve => setTimeout(resolve, 300)); // Имитация задержки сети
-                setProjects(mockProjects);
-                setFilteredProjects(mockProjects);
+                const data = await getObjects();
+                setProjects(data);
+                setFilteredProjects(data);
             } catch (error) {
                 console.error("Ошибка загрузки проектов:", error);
+                if (error.response?.status === 401) {
+                    window.location.href = '/';
+                    return;
+                }
                 setProjects([]);
                 setFilteredProjects([]);
             } finally {

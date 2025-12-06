@@ -2,6 +2,7 @@
 import { useRouter, useParams } from "next/navigation";
 import { useState } from "react";
 import CustomButton from "../../../../components/СustomButton";
+import { createRequest } from "../../../../lib/api";
 
 export default function NewRequestPage() {
     const router = useRouter();
@@ -64,31 +65,28 @@ export default function NewRequestPage() {
                 notes: notes.trim() || undefined
             };
 
-            // TODO: Заменить на реальный API запрос
-            // const token = localStorage.getItem('token'); // или из контекста/провайдера
-            // const response = await fetch('/api/requests', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}` // Authorization: Bearer <token>
-            //     },
-            //     body: JSON.stringify(requestData)
-            // });
-            
-            // if (!response.ok) {
-            //     throw new Error('Ошибка создания заявки');
-            // }
-            
-            // const data = await response.json();
-            console.log("Данные для отправки:", requestData);
-            
-            // Имитация задержки
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await createRequest(requestData);
             
             // После успешного создания возвращаемся на страницу проекта
             router.push(`/main/projects/${params.id}`);
         } catch (error) {
             console.error("Ошибка создания заявки:", error);
+            if (error.response?.status === 401) {
+                window.location.href = '/';
+                return;
+            }
+            if (error.response?.status === 400) {
+                alert("Ошибка валидации данных. Проверьте правильность заполнения полей.");
+                return;
+            }
+            if (error.response?.status === 403) {
+                alert("Нет доступа к объекту");
+                return;
+            }
+            if (error.response?.status === 404) {
+                alert("Объект не найден");
+                return;
+            }
             alert("Ошибка при создании заявки. Попробуйте еще раз.");
         } finally {
             setIsSubmitting(false);

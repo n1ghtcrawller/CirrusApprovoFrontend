@@ -2,7 +2,7 @@
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import User from "../../../../components/User";
-import mockProjectTeam from "../../../../data/mockProjectTeam.json";
+import { getObjectWithMembers, addObjectMember, removeObjectMember, updateObjectMemberRole } from "../../../../lib/api";
 
 export default function ProjectTeamPage() {
     const router = useRouter();
@@ -30,24 +30,12 @@ export default function ProjectTeamPage() {
     const loadTeamData = async () => {
         setIsLoading(true);
         try {
-            // TODO: Заменить на реальный API запрос
-            // const token = localStorage.getItem('token');
-            // const response = await fetch(`/api/objects/${params.id}/with-members`, {
-            //     headers: {
-            //         'Authorization': `Bearer ${token}`
-            //     }
-            // });
-            // if (!response.ok) throw new Error('Ошибка загрузки команды');
-            // const data = await response.json();
-            
-            // Пока используем mock данные
-            await new Promise(resolve => setTimeout(resolve, 300));
-            const data = mockProjectTeam;
+            const data = await getObjectWithMembers(parseInt(params.id));
             setProjectData(data);
             
             // Формируем список участников с ролями
             // Проверяем, есть ли владелец уже в members, чтобы избежать дубликатов
-            const ownerInMembers = data.members.some(m => m.user_id === data.owner.id);
+            const ownerInMembers = data.members?.some(m => m.user_id === data.owner?.id);
             const allMembers = ownerInMembers 
                 ? data.members 
                 : [
@@ -58,11 +46,20 @@ export default function ProjectTeamPage() {
                         created_at: data.created_at,
                         user: data.owner
                     },
-                    ...data.members
+                    ...(data.members || [])
                 ];
             setMembers(allMembers);
         } catch (error) {
             console.error("Ошибка загрузки команды:", error);
+            if (error.response?.status === 401) {
+                window.location.href = '/';
+                return;
+            }
+            if (error.response?.status === 403 || error.response?.status === 404) {
+                setProjectData(null);
+                setMembers([]);
+                return;
+            }
         } finally {
             setIsLoading(false);
         }
@@ -75,36 +72,24 @@ export default function ProjectTeamPage() {
         }
 
         try {
-            // TODO: Заменить на реальный API запрос
-            // const token = localStorage.getItem('token');
-            // const response = await fetch(`/api/objects/${params.id}/members`, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`
-            //     },
-            //     body: JSON.stringify({
-            //         user_id: parseInt(newMemberData.user_id),
-            //         role: newMemberData.role
-            //     })
-            // });
-            // if (!response.ok) {
-            //     if (response.status === 403) {
-            //         alert("Только владелец может добавлять участников");
-            //         return;
-            //     }
-            //     throw new Error('Ошибка добавления участника');
-            // }
-            // const result = await response.json();
-            
-            // Имитация добавления
-            await new Promise(resolve => setTimeout(resolve, 300));
-            alert("Участник добавлен (mock)");
+            await addObjectMember(
+                parseInt(params.id),
+                parseInt(newMemberData.user_id),
+                newMemberData.role
+            );
             setIsAddingMember(false);
             setNewMemberData({ user_id: "", role: "" });
             loadTeamData(); // Перезагружаем данные
         } catch (error) {
             console.error("Ошибка добавления участника:", error);
+            if (error.response?.status === 403) {
+                alert("Только владелец может добавлять участников");
+                return;
+            }
+            if (error.response?.status === 404) {
+                alert("Объект или пользователь не найден");
+                return;
+            }
             alert("Ошибка при добавлении участника");
         }
     };
@@ -115,70 +100,45 @@ export default function ProjectTeamPage() {
         }
 
         try {
-            // TODO: Заменить на реальный API запрос
-            // const token = localStorage.getItem('token');
-            // const response = await fetch(`/api/objects/${params.id}/members/${userId}`, {
-            //     method: 'DELETE',
-            //     headers: {
-            //         'Authorization': `Bearer ${token}`
-            //     }
-            // });
-            // if (!response.ok) {
-            //     if (response.status === 400) {
-            //         alert("Нельзя удалить владельца объекта");
-            //         return;
-            //     }
-            //     if (response.status === 403) {
-            //         alert("Только владелец может удалять участников");
-            //         return;
-            //     }
-            //     throw new Error('Ошибка удаления участника');
-            // }
-            
-            // Имитация удаления
-            await new Promise(resolve => setTimeout(resolve, 300));
-            setMembers(members.filter(m => m.user_id !== userId));
-            alert("Участник удалён (mock)");
+            await removeObjectMember(parseInt(params.id), userId);
+            loadTeamData(); // Перезагружаем данные
         } catch (error) {
             console.error("Ошибка удаления участника:", error);
+            if (error.response?.status === 400) {
+                alert("Нельзя удалить владельца объекта");
+                return;
+            }
+            if (error.response?.status === 403) {
+                alert("Только владелец может удалять участников");
+                return;
+            }
+            if (error.response?.status === 404) {
+                alert("Пользователь не является членом объекта");
+                return;
+            }
             alert("Ошибка при удалении участника");
         }
     };
 
     const handleChangeRole = async (userId, newRole) => {
         try {
-            // TODO: Заменить на реальный API запрос
-            // const token = localStorage.getItem('token');
-            // const response = await fetch(`/api/objects/${params.id}/members/${userId}/role`, {
-            //     method: 'PUT',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`
-            //     },
-            //     body: JSON.stringify({ role: newRole })
-            // });
-            // if (!response.ok) {
-            //     if (response.status === 400) {
-            //         alert("Нельзя изменить роль владельца");
-            //         return;
-            //     }
-            //     if (response.status === 403) {
-            //         alert("Только владелец может изменять роли");
-            //         return;
-            //     }
-            //     throw new Error('Ошибка изменения роли');
-            // }
-            // const result = await response.json();
-            
-            // Имитация изменения роли
-            await new Promise(resolve => setTimeout(resolve, 300));
-            setMembers(members.map(m => 
-                m.user_id === userId ? { ...m, role: newRole } : m
-            ));
+            await updateObjectMemberRole(parseInt(params.id), userId, newRole);
             setIsChangingRole(null);
-            alert("Роль изменена (mock)");
+            loadTeamData(); // Перезагружаем данные
         } catch (error) {
             console.error("Ошибка изменения роли:", error);
+            if (error.response?.status === 400) {
+                alert("Нельзя изменить роль владельца");
+                return;
+            }
+            if (error.response?.status === 403) {
+                alert("Только владелец может изменять роли");
+                return;
+            }
+            if (error.response?.status === 404) {
+                alert("Пользователь не является членом объекта");
+                return;
+            }
             alert("Ошибка при изменении роли");
         }
     };

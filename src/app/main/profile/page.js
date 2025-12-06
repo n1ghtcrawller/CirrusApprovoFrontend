@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import mockUserProfile from "../../data/mockUserProfile.json";
+import { getCurrentUser, updateCurrentUser } from "../../lib/api";
 
 export default function Profile() {
     const [user, setUser] = useState(null);
@@ -23,25 +23,7 @@ export default function Profile() {
     const loadProfile = async () => {
         setIsLoading(true);
         try {
-            // TODO: Заменить на реальный API запрос
-            // const token = localStorage.getItem('token');
-            // const response = await fetch('/api/users/me', {
-            //     headers: {
-            //         'Authorization': `Bearer ${token}`
-            //     }
-            // });
-            // if (!response.ok) {
-            //     if (response.status === 401) {
-            //         // Перенаправить на страницу входа
-            //         return;
-            //     }
-            //     throw new Error('Ошибка загрузки профиля');
-            // }
-            // const data = await response.json();
-            
-            // Пока используем mock данные
-            await new Promise(resolve => setTimeout(resolve, 300));
-            const data = mockUserProfile;
+            const data = await getCurrentUser();
             setUser(data);
             setFormData({
                 first_name: data.first_name || "",
@@ -53,6 +35,10 @@ export default function Profile() {
             });
         } catch (error) {
             console.error("Ошибка загрузки профиля:", error);
+            if (error.response?.status === 401) {
+                // Перенаправить на страницу входа
+                window.location.href = '/';
+            }
         } finally {
             setIsLoading(false);
         }
@@ -70,32 +56,20 @@ export default function Profile() {
             if (formData.location !== user.location) updateData.location = formData.location;
             if (formData.phone !== user.phone) updateData.phone = formData.phone;
 
-            // TODO: Заменить на реальный API запрос
-            // const token = localStorage.getItem('token');
-            // const response = await fetch('/api/users/me', {
-            //     method: 'PUT',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`
-            //     },
-            //     body: JSON.stringify(updateData)
-            // });
-            // if (!response.ok) {
-            //     if (response.status === 401) {
-            //         // Перенаправить на страницу входа
-            //         return;
-            //     }
-            //     throw new Error('Ошибка обновления профиля');
-            // }
-            // const updatedData = await response.json();
-            
-            // Имитация обновления
-            await new Promise(resolve => setTimeout(resolve, 500));
-            const updatedData = { ...user, ...updateData };
+            if (Object.keys(updateData).length === 0) {
+                setIsEditing(false);
+                return;
+            }
+
+            const updatedData = await updateCurrentUser(updateData);
             setUser(updatedData);
             setIsEditing(false);
         } catch (error) {
             console.error("Ошибка обновления профиля:", error);
+            if (error.response?.status === 401) {
+                window.location.href = '/';
+                return;
+            }
             alert("Ошибка при сохранении профиля. Попробуйте еще раз.");
         } finally {
             setIsSaving(false);

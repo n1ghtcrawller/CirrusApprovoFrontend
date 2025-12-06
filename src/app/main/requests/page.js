@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Search from "../../components/Search";
 import RequestList from "../../components/RequestList";
-import mockRequests from "../../data/mockRequests.json";
+import { getRequests } from "../../lib/api";
 
 export default function Requests() {
     const router = useRouter();
@@ -12,20 +12,18 @@ export default function Requests() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Имитация загрузки данных (в будущем здесь будет API запрос)
         const loadRequests = async () => {
             setIsLoading(true);
             try {
-                // TODO: Заменить на реальный API запрос
-                // const response = await fetch('/api/requests');
-                // const data = await response.json();
-                
-                // Пока используем mock данные
-                await new Promise(resolve => setTimeout(resolve, 300)); // Имитация задержки сети
-                setRequests(mockRequests);
-                setFilteredRequests(mockRequests);
+                const data = await getRequests();
+                setRequests(data);
+                setFilteredRequests(data);
             } catch (error) {
                 console.error("Ошибка загрузки заявок:", error);
+                if (error.response?.status === 401) {
+                    window.location.href = '/';
+                    return;
+                }
                 setRequests([]);
                 setFilteredRequests([]);
             } finally {

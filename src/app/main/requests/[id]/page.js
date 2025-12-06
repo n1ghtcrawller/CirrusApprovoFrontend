@@ -1,7 +1,8 @@
 "use client";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import mockRequestDetail from "../../../data/mockRequestDetail.json";
+import { getRequestWithRelations } from "../../../lib/api";
+import CustomButton from "../../../components/СustomButton";
 
 export default function RequestDetailPage() {
     const router = useRouter();
@@ -10,19 +11,21 @@ export default function RequestDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Имитация загрузки данных (в будущем здесь будет API запрос)
         const loadRequest = async () => {
             setIsLoading(true);
             try {
-                // TODO: Заменить на реальный API запрос
-                // const response = await fetch(`/api/requests/${params.id}`);
-                // const data = await response.json();
-                
-                // Пока используем mock данные
-                await new Promise(resolve => setTimeout(resolve, 300)); // Имитация задержки сети
-                setRequest(mockRequestDetail);
+                const data = await getRequestWithRelations(parseInt(params.id));
+                setRequest(data);
             } catch (error) {
                 console.error("Ошибка загрузки заявки:", error);
+                if (error.response?.status === 401) {
+                    window.location.href = '/';
+                    return;
+                }
+                if (error.response?.status === 403 || error.response?.status === 404) {
+                    setRequest(null);
+                    return;
+                }
                 setRequest(null);
             } finally {
                 setIsLoading(false);
@@ -80,6 +83,57 @@ export default function RequestDetailPage() {
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " КБ";
         return (bytes / (1024 * 1024)).toFixed(1) + " МБ";
     };
+
+    const getPendingActionByStatus = (status) => {
+        const roleDisplayMap = {
+            supply_specialist: "Специалист отдела снабжения",
+            director: "Директор",
+            accountant: "Бухгалтер",
+            foreman: "Прораб",
+        };
+
+        const statusActionMap = {
+            created: {
+                role: "supply_specialist",
+                role_display: roleDisplayMap.supply_specialist,
+                action: "Добавить счёт",
+            },
+            supply_added_invoice: {
+                role: "director",
+                role_display: roleDisplayMap.director,
+                action: "Подтвердить счёт",
+            },
+            director_approved: {
+                role: "accountant",
+                role_display: roleDisplayMap.accountant,
+                action: "Отметить как оплачено",
+            },
+            accountant_paid: {
+                role: "foreman",
+                role_display: roleDisplayMap.foreman,
+                action: "Подтвердить получение материалов",
+            },
+            foreman_confirmed_receipt: {
+                role: null,
+                role_display: "Любой участник",
+                action: "Отгрузить документы",
+            },
+        };
+
+        return statusActionMap[status] || null;
+    };
+
+    const getActionRoute = (action) => {
+        const routeMap = {
+            "Добавить счёт": "add_invoice",
+            "Подтвердить счёт": "invoice_agreement",
+            "Отметить как оплачено": "accountants_payment",
+            "Подтвердить получение материалов": "foreman_agreement",
+            "Отгрузить документы": "documents_ship",
+        };
+        return routeMap[action] || null;
+    };
+
 
     if (isLoading) {
         return (
@@ -200,6 +254,90 @@ export default function RequestDetailPage() {
                         </div>
                     </div>
                 )}
+
+                {request.status_history && request.status_history.length > 0 && (
+                    <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
+                        <h2 className="text-xl font-bold text-[#111827]">История</h2>
+                        <div className="flex flex-col gap-4">
+                            {request.status_history.map((entry, index) => {
+                                const getUserName = (userId) => {
+                                    // Временный маппинг для демонстрации (в будущем будет из API)
+                                    const userMap = {
+                                        3: "Мария Смирнова",
+                                        5: "Иван Петров",
+                                    };
+                                    return userMap[userId] || `Пользователь #${userId}`;
+                                };
+
+                                return (
+                                    <div
+                                        key={entry.id}
+                                        className="flex gap-4 relative"
+                                    >
+                                        {index < request.status_history.length - 1 && (
+                                            <div className="absolute left-[11px] top-8 bottom-0 w-0.5 bg-[#E5E7EB]"></div>
+                                        )}
+                                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#DBEAFE] border-2 border-white flex items-center justify-center relative z-10">
+                                            <div className="w-2 h-2 rounded-full bg-[#1E40AF]"></div>
+                                        </div>
+                                        <div className="flex-1 flex flex-col gap-2 pb-4">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="font-medium text-[#111827]">
+                                                        {entry.action}
+                                                    </span>
+                                                    {entry.status && (
+                                                        <span className={`text-xs px-2 py-1 rounded-full inline-block w-fit mt-1 ${getStatusColor(entry.status)}`}>
+                                                            {getStatusLabel(entry.status)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs text-[#9CA3AF]">
+                                                <span>{getUserName(entry.changed_by)}</span>
+                                                <span>•</span>
+                                                <span>{formatDate(entry.created_at)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {(() => {
+                    // Определяем pending_action на основе статуса, если он не пришел с сервера
+                    const pendingAction = request.pending_action || getPendingActionByStatus(request.status);
+                    
+                    // Не показываем кнопку, если статус финальный (documents_shipped)
+                    if (!pendingAction || request.status === "documents_shipped") {
+                        return null;
+                    }
+
+                    return (
+                        <div className="flex w-full flex-col gap-3 rounded-xl bg-white p-6">
+                            <div className="flex flex-col gap-2">
+                                <span className="text-sm text-[#6B7280]">
+                                    От <span className="font-medium text-[#111827]">{pendingAction.role_display}</span> требуется:
+                                </span>
+                                <CustomButton
+                                    width="100%"
+                                    onClick={() => {
+                                        const route = getActionRoute(pendingAction.action);
+                                        if (route) {
+                                            router.push(`/main/requests/${params.id}/${route}`);
+                                        } else {
+                                            console.error("Неизвестное действие:", pendingAction.action);
+                                        }
+                                    }}
+                                >
+                                    {pendingAction.action}
+                                </CustomButton>
+                            </div>
+                        </div>
+                    );
+                })()}
             </div>
         </main>
     );

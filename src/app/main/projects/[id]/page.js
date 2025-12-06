@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import plus from "../../../assets/components/plus.svg";
 import Search from "../../../components/Search";
 import RequestList from "../../../components/RequestList";
-import mockProjects from "../../../data/mock.json";
-import mockRequests from "../../../data/mockRequests.json";
+import { getObject, getObjectRequests } from "../../../lib/api";
 
 export default function ProjectDetailsPage() {
     const router = useRouter();
@@ -16,29 +15,29 @@ export default function ProjectDetailsPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Имитация загрузки данных (в будущем здесь будет API запрос)
         const loadData = async () => {
             setIsLoading(true);
             try {
-                // TODO: Заменить на реальный API запрос
-                // const projectResponse = await fetch(`/api/projects/${params.id}`);
-                // const projectData = await projectResponse.json();
-                // const requestsResponse = await fetch(`/api/requests/object/${params.id}`);
-                // const requestsData = await requestsResponse.json();
+                const [projectData, requestsData] = await Promise.all([
+                    getObject(parseInt(params.id)),
+                    getObjectRequests(parseInt(params.id))
+                ]);
                 
-                // Пока используем mock данные
-                await new Promise(resolve => setTimeout(resolve, 300)); // Имитация задержки сети
-                
-                // Найти проект по ID
-                const foundProject = mockProjects.find(p => p.id === parseInt(params.id));
-                setProject(foundProject || null);
-                
-                // Фильтровать заявки по object_id
-                const projectRequests = mockRequests.filter(r => r.object_id === parseInt(params.id));
-                setRequests(projectRequests);
-                setFilteredRequests(projectRequests);
+                setProject(projectData);
+                setRequests(requestsData);
+                setFilteredRequests(requestsData);
             } catch (error) {
                 console.error("Ошибка загрузки данных:", error);
+                if (error.response?.status === 401) {
+                    window.location.href = '/';
+                    return;
+                }
+                if (error.response?.status === 403 || error.response?.status === 404) {
+                    setProject(null);
+                    setRequests([]);
+                    setFilteredRequests([]);
+                    return;
+                }
                 setProject(null);
                 setRequests([]);
                 setFilteredRequests([]);
