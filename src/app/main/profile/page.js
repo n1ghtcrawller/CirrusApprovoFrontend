@@ -45,16 +45,20 @@ export default function Profile() {
     };
 
     const handleSave = async () => {
+        if (!user) {
+            return;
+        }
+        
         setIsSaving(true);
         try {
             // Формируем объект только с изменёнными полями
             const updateData = {};
-            if (formData.first_name !== user.first_name) updateData.first_name = formData.first_name;
-            if (formData.position !== user.position) updateData.position = formData.position;
-            if (formData.company !== user.company) updateData.company = formData.company;
-            if (formData.email !== user.email) updateData.email = formData.email;
-            if (formData.location !== user.location) updateData.location = formData.location;
-            if (formData.phone !== user.phone) updateData.phone = formData.phone;
+            if (formData.first_name !== (user.first_name || "")) updateData.first_name = formData.first_name;
+            if (formData.position !== (user.position || "")) updateData.position = formData.position;
+            if (formData.company !== (user.company || "")) updateData.company = formData.company;
+            if (formData.email !== (user.email || "")) updateData.email = formData.email;
+            if (formData.location !== (user.location || "")) updateData.location = formData.location;
+            if (formData.phone !== (user.phone || "")) updateData.phone = formData.phone;
 
             if (Object.keys(updateData).length === 0) {
                 setIsEditing(false);
@@ -279,9 +283,9 @@ export default function Profile() {
                             <div className="flex items-start justify-between gap-3">
                                 <div className="flex flex-col gap-1">
                                     <h2 className="text-2xl font-bold text-[#111827]">
-                                        {user.first_name} {user.last_name}
+                                        {user.first_name || ""} {user.last_name || ""}
                                     </h2>
-                                    <span className="text-sm text-[#9CA3AF]">@{user.username}</span>
+                                    <span className="text-sm text-[#9CA3AF]">@{user.username || "unknown"}</span>
                                 </div>
                                 <span
                                     className={`rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap ${getVerifiedStatusColor(

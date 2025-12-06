@@ -37,11 +37,15 @@ export default function User({
 
     const isOwner = member.role === "director";
 
+    if (!member.user) {
+        return null;
+    }
+
     return (
         <div className="relative flex flex-col gap-2 rounded-lg bg-[#f6f6f8] p-4 pr-8">
             <div className="flex flex-col gap-1">
                 <span className="font-medium text-[#111827]">
-                    {member.user.first_name} {member.user.last_name}
+                    {member.user.first_name || ""} {member.user.last_name || ""}
                 </span>
                 {isEditingRole ? (
                     <CustomSelect
@@ -67,7 +71,7 @@ export default function User({
                 )}
             </div>
             <span className="text-xs text-[#9CA3AF]">
-                @{member.user.username} • В команде с {formatDate(member.created_at)}
+                @{member.user.username || "unknown"} • В команде с {formatDate(member.created_at)}
             </span>
             {!isOwner && !isEditingRole && (
                 <div className="absolute top-4 right-4 flex items-center gap-2">

@@ -35,20 +35,25 @@ export default function ProjectTeamPage() {
             
             // Формируем список участников с ролями
             // Проверяем, есть ли владелец уже в members, чтобы избежать дубликатов
-            const ownerInMembers = data.members?.some(m => m.user_id === data.owner?.id);
-            const allMembers = ownerInMembers 
-                ? data.members 
-                : [
-                    {
-                        object_id: data.id,
-                        user_id: data.owner.id,
-                        role: "director",
-                        created_at: data.created_at,
-                        user: data.owner
-                    },
-                    ...(data.members || [])
-                ];
-            setMembers(allMembers);
+            if (data.owner) {
+                const ownerInMembers = data.members?.some(m => m.user_id === data.owner.id);
+                const allMembers = ownerInMembers 
+                    ? (data.members || []).filter(m => m.user) // Фильтруем только тех, у кого есть user
+                    : [
+                        {
+                            object_id: data.id,
+                            user_id: data.owner.id,
+                            role: "director",
+                            created_at: data.created_at,
+                            user: data.owner
+                        },
+                        ...(data.members || []).filter(m => m.user) // Фильтруем только тех, у кого есть user
+                    ];
+                setMembers(allMembers);
+            } else {
+                // Если нет owner, используем только members
+                setMembers((data.members || []).filter(m => m.user));
+            }
         } catch (error) {
             console.error("Ошибка загрузки команды:", error);
             if (error.response?.status === 401) {
