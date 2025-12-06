@@ -54,9 +54,12 @@ export default function Projects() {
                 <h1 className="w-full text-4xl font-bold text-[#111827] leading-[0.9]">
                     Все проекты
                 </h1>
-                <div className="flex items-center justify-center">
+                <button
+                    onClick={() => router.push("/main/projects/new")}
+                    className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                >
                     <img src={plus.src} alt="plus" className="w-10 h-10" />
-                </div>
+                </button>
             </div>
             <Search placeholder="Поиск проекта" onSearch={handleSearch} />
             {isLoading ? (
