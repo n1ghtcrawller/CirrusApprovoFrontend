@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import projects from "../assets/images/projects.svg";
 import requests from "../assets/images/requests.svg";
 import mechanisation from "../assets/images/mechanisation.svg";
@@ -9,6 +10,15 @@ import profile from "../assets/images/profile.svg";
 export default function MainLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
+
+  useEffect(() => {
+    // Инициализация Telegram Web App для полноэкранного режима
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+      window.Telegram.WebApp.requestFullScreen();
+    }
+  }, []);
 
   const tabs = [
     { path: "/main/projects", label: "Проекты", icon: projects },
