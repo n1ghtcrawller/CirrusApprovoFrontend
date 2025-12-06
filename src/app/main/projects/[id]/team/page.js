@@ -3,7 +3,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import User from "../../../../components/User";
 import CustomDropDownInput from "../../../../components/CustomDropDownInput";
-import { getObjectWithMembers, addObjectMember, removeObjectMember, updateObjectMemberRole } from "../../../../lib/api";
+import { getObjectWithMembers, getObjectMembers, addObjectMember, removeObjectMember, updateObjectMemberRole } from "../../../../lib/api";
 
 export default function ProjectTeamPage() {
     const router = useRouter();
@@ -31,29 +31,33 @@ export default function ProjectTeamPage() {
     const loadTeamData = async () => {
         setIsLoading(true);
         try {
-            const data = await getObjectWithMembers(parseInt(params.id));
-            setProjectData(data);
+            // Получаем объект с информацией о владельце
+            const objectData = await getObjectWithMembers(parseInt(params.id));
+            setProjectData(objectData);
+            
+            // Получаем список участников с ролями
+            const membersData = await getObjectMembers(parseInt(params.id));
             
             // Формируем список участников с ролями
             // Проверяем, есть ли владелец уже в members, чтобы избежать дубликатов
-            if (data.owner) {
-                const ownerInMembers = data.members?.some(m => m.user_id === data.owner.id);
-            const allMembers = ownerInMembers 
-                    ? (data.members || []).filter(m => m.user) // Фильтруем только тех, у кого есть user
-                : [
-                    {
-                        object_id: data.id,
-                        user_id: data.owner.id,
-                        role: "director",
-                        created_at: data.created_at,
-                        user: data.owner
-                    },
-                        ...(data.members || []).filter(m => m.user) // Фильтруем только тех, у кого есть user
-                ];
-            setMembers(allMembers);
+            if (objectData.owner) {
+                const ownerInMembers = membersData?.some(m => m.user_id === objectData.owner.id);
+                const allMembers = ownerInMembers 
+                    ? (membersData || []).filter(m => m.user) // Фильтруем только тех, у кого есть user
+                    : [
+                        {
+                            object_id: objectData.id,
+                            user_id: objectData.owner.id,
+                            role: "director",
+                            created_at: objectData.created_at,
+                            user: objectData.owner
+                        },
+                        ...(membersData || []).filter(m => m.user) // Фильтруем только тех, у кого есть user
+                    ];
+                setMembers(allMembers);
             } else {
                 // Если нет owner, используем только members
-                setMembers((data.members || []).filter(m => m.user));
+                setMembers((membersData || []).filter(m => m.user));
             }
         } catch (error) {
             console.error("Ошибка загрузки команды:", error);
