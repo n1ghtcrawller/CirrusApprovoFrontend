@@ -48,7 +48,7 @@ export default function Home() {
       await telegramLogin(initData);
       
       // После успешной авторизации перенаправляем на главную страницу
-      router.push("/main/projects");
+      router.push("/menu");
     } catch (error) {
       console.error("Ошибка авторизации:", error);
       setError(
