@@ -3,8 +3,7 @@
 export default function CustomButton({ width, onClick, children }) {
   const style = {
     height: "50px",
-    fontFamily:
-      '-apple-system, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif',
+    fontFamily: "var(--font-onest), -apple-system, sans-serif",
     fontSize: "24px",
     fontWeight: "500",
     lineHeight: "28px",

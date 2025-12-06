@@ -1,4 +1,11 @@
+import { Onest } from "next/font/google";
 import "./globals.css";
+
+const onest = Onest({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-onest",
+  display: "swap",
+});
 
 export const metadata = {
   title: "Cirrus Approvo",
@@ -8,7 +15,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className={`${onest.variable} antialiased`}>{children}</body>
     </html>
   );
 }
