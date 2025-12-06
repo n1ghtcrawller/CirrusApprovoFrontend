@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { getCurrentUser, updateCurrentUser } from "../../lib/api";
+import { RequestStatusDisplay } from "../../lib/constants";
 
 export default function Profile() {
     const [user, setUser] = useState(null);
@@ -324,6 +325,72 @@ export default function Profile() {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Статистика заявок */}
+                            {user.requests_stats && (
+                                <div className="flex flex-col gap-4 pt-4 border-t border-[#E5E7EB]">
+                                    <h3 className="text-lg font-bold text-[#111827]">Статистика заявок</h3>
+                                    
+                                    {/* Общее количество */}
+                                    <div className="flex items-center justify-between rounded-lg bg-[#f6f6f8] p-4">
+                                        <span className="text-sm font-medium text-[#6B7280]">Всего заявок:</span>
+                                        <span className="text-2xl font-bold text-[#111827]">{user.requests_stats.total || 0}</span>
+                                    </div>
+
+                                    {/* Статистика по статусам */}
+                                    {user.requests_stats.by_status && (
+                                        <div className="flex flex-col gap-3">
+                                            <h4 className="text-sm font-medium text-[#6B7280]">По статусам:</h4>
+                                            <div className="grid grid-cols-1 gap-3">
+                                                {Object.entries(user.requests_stats.by_status).map(([status, count]) => {
+                                                    if (count === 0) return null;
+                                                    
+                                                    const percentage = user.requests_stats.total > 0 
+                                                        ? (count / user.requests_stats.total) * 100 
+                                                        : 0;
+                                                    
+                                                    const getStatusColor = (status) => {
+                                                        const colorMap = {
+                                                            created: "bg-[#E5E7EB]",
+                                                            supply_added_invoice: "bg-[#DBEAFE]",
+                                                            director_approved: "bg-[#D1FAE5]",
+                                                            accountant_paid: "bg-[#FEF3C7]",
+                                                            foreman_confirmed_receipt: "bg-[#E0E7FF]",
+                                                            documents_shipped: "bg-[#D1FAE5]",
+                                                        };
+                                                        return colorMap[status] || "bg-[#E5E7EB]";
+                                                    };
+
+                                                    return (
+                                                        <div
+                                                            key={status}
+                                                            className="flex flex-col gap-2 rounded-lg bg-white border border-[#E5E7EB] p-3 hover:shadow-md transition-shadow cursor-pointer"
+                                                        >
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-sm font-medium text-[#111827]">
+                                                                    {RequestStatusDisplay[status] || status}
+                                                                </span>
+                                                                <span className="text-sm font-bold text-[#111827]">
+                                                                    {count}
+                                                                </span>
+                                                            </div>
+                                                            <div className="w-full bg-[#E5E7EB] rounded-full h-2 overflow-hidden">
+                                                                <div
+                                                                    className={`h-full rounded-full transition-all duration-500 ${getStatusColor(status)}`}
+                                                                    style={{ width: `${percentage}%` }}
+                                                                />
+                                                            </div>
+                                                            <span className="text-xs text-[#9CA3AF]">
+                                                                {percentage.toFixed(1)}% от общего количества
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
