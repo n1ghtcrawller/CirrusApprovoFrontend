@@ -128,7 +128,7 @@ export default function NewProjectPage() {
                                 height: "50px",
                             }}
                         >
-                            {isSubmitting ? "Создание..." : "Создать проект"}
+                            {isSubmitting ? "Создание..." : "Создать"}
                         </button>
                     </div>
                 </form>
