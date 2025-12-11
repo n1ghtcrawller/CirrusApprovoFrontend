@@ -169,7 +169,7 @@ export default function ProjectTeamPage() {
 
     if (isLoading) {
         return (
-            <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-20 px-6">
+            <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
                 <div className="flex w-full max-w-2xl flex-col items-start gap-12">
                     <div className="w-full text-center text-[#9CA3AF] py-8">
                         Загрузка команды...
@@ -181,7 +181,7 @@ export default function ProjectTeamPage() {
 
     if (!projectData) {
         return (
-            <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-20 px-6">
+            <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
                 <div className="flex w-full max-w-2xl flex-col items-start gap-12">
                     <div className="w-full text-center text-[#9CA3AF] py-8">
                         Проект не найден
@@ -192,7 +192,7 @@ export default function ProjectTeamPage() {
     }
 
     return (
-        <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-20 px-6">
+        <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
             <div className="flex w-full max-w-2xl flex-col items-start gap-6">
                 <button
                     onClick={() => router.back()}
