@@ -94,8 +94,8 @@ export default function NewRequestPage() {
     };
 
     return (
-        <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-20 px-6">
-            <div className="flex w-full max-w-2xl flex-col items-start gap-6">
+        <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-20 px-6 overflow-x-hidden">
+            <div className="flex w-full max-w-2xl flex-col items-start gap-6 min-w-0">
                 <button
                     onClick={() => router.back()}
                     className="text-sm text-[#6B7280] hover:text-[#111827] transition-colors"
@@ -106,24 +106,29 @@ export default function NewRequestPage() {
                 <h1 className="text-4xl font-bold text-[#111827] leading-[0.9]">
                     Новая заявка
                 </h1>
-                <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6">
-                    <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6 overflow-hidden">
-                        <div className="flex flex-col gap-2 min-w-0">
+                <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6 min-w-0">
+                    <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6 overflow-hidden min-w-0">
+                        <div className="flex flex-col gap-2 min-w-0 w-full">
                             <label className="text-sm font-medium text-[#6B7280]">
                                 Дата доставки *
                             </label>
-                            <input
-                                type="date"
-                                value={deliveryDate}
-                                onChange={(e) => setDeliveryDate(e.target.value)}
-                                className="w-full min-w-0 rounded-xl bg-white border border-[#E5E7EB] px-4 py-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
-                                style={{
-                                    fontFamily: "var(--font-onest), -apple-system, sans-serif",
-                                    maxWidth: "100%",
-                                    boxSizing: "border-box",
-                                }}
-                                required
-                            />
+                            <div className="w-full min-w-0 overflow-hidden" style={{ width: "100%", maxWidth: "100%" }}>
+                                <input
+                                    type="date"
+                                    value={deliveryDate}
+                                    onChange={(e) => setDeliveryDate(e.target.value)}
+                                    className="w-full rounded-xl bg-white border border-[#E5E7EB] px-4 py-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
+                                    style={{
+                                        fontFamily: "var(--font-onest), -apple-system, sans-serif",
+                                        width: "100%",
+                                        maxWidth: "100%",
+                                        boxSizing: "border-box",
+                                        minWidth: "0",
+                                        display: "block",
+                                    }}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <div className="flex flex-col gap-2">
@@ -246,7 +251,7 @@ export default function NewRequestPage() {
                                 height: "50px",
                             }}
                         >
-                            {isSubmitting ? "Создание..." : "Создать заявку"}
+                            {isSubmitting ? "Создание..." : "Создать"}
                         </button>
                     </div>
                 </form>

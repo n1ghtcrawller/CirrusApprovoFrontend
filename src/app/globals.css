@@ -107,3 +107,19 @@ img {
   /* Резервируем место для изображений */
   display: block;
 }
+
+/* Исправление проблемы с шириной input[type="date"] на мобильных устройствах */
+input[type="date"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+  input[type="date"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+}
