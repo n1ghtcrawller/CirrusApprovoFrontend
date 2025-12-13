@@ -1,5 +1,5 @@
 "use client";
-import { HapticNotificationType, impactOccurred } from './HapticFeedback';
+import { HapticImpactStyle, impactOccurred } from './HapticFeedback';
 
 
 export default function CustomButton({ width, onClick, children, disabled = false }) {
@@ -18,9 +18,11 @@ export default function CustomButton({ width, onClick, children, disabled = fals
   };
 
   const handleClick = (e) => {
-    impactOccurred(HapticNotificationType.SUCCESS);
-    if (onClick) {
-      onClick(e);
+    if (!disabled) {
+      impactOccurred(HapticImpactStyle.MEDIUM);
+      if (onClick) {
+        onClick(e);
+      }
     }
   };
 

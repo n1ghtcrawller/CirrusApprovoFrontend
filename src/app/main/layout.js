@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { HapticImpactStyle, impactOccurred } from "../components/HapticFeedback";
 import projects from "../assets/images/projects.svg";
 import requests from "../assets/images/requests.svg";
 import mechanisation from "../assets/images/mechanisation.svg";
@@ -41,7 +42,10 @@ export default function MainLayout({ children }) {
             return (
               <button
                 key={tab.path}
-                onClick={() => router.push(tab.path)}
+                onClick={() => {
+                  impactOccurred(HapticImpactStyle.LIGHT);
+                  router.push(tab.path);
+                }}
                 className={`flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ease-in-out ${
                   isActive ? "text-[#000000]" : "text-[#6B7280]"
                 }`}
