@@ -110,7 +110,7 @@ export default function Profile() {
 
     if (isLoading) {
         return (
-            <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-20 px-6">
+            <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
                 <div className="flex w-full max-w-2xl flex-col items-start gap-12">
                     <div className="w-full text-center text-[#9CA3AF] py-8">
                         Загрузка профиля...
@@ -122,7 +122,7 @@ export default function Profile() {
 
     if (!user) {
     return (
-    <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-20 px-6">
+    <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
         <div className="flex w-full max-w-2xl flex-col items-start gap-12">
                     <div className="w-full text-center text-[#9CA3AF] py-8">
                         Профиль не найден
@@ -133,7 +133,7 @@ export default function Profile() {
     }
 
     return (
-        <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-20 px-6">
+        <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
             <div className="flex w-full max-w-2xl flex-col items-start gap-6">
                 <div className="flex w-full items-center justify-between">
                     <h1 className="text-4xl font-bold text-[#111827] leading-[0.9]">
