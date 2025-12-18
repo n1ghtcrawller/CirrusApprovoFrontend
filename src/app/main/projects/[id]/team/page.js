@@ -75,7 +75,6 @@ export default function ProjectTeamPage() {
             setIsLoading(false);
         }
     };
-
     const handleAddMember = async () => {
         if (!newMemberData.user_id || !newMemberData.role) {
             alert("Заполните все поля");

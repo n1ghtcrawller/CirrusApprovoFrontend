@@ -110,6 +110,29 @@ export default function CustomDropDownInput({
             onChange({ target: { value: user.id } });
         }
     };
+    const generateInviteLink = () => {
+        if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+            // Используем Telegram WebApp API для генерации invite link
+            const tg = window.Telegram.WebApp;
+            const botUrl = 'https://t.me/cirrusapprovo_bot?startapp=invite';
+            const text = 'Приглашаю тебя принять участие в проекте в Cirrus Approvo!';
+            
+            const inviteLink = `https://t.me/share/url?url=${encodeURIComponent(botUrl)}&text=${encodeURIComponent(text)}`;
+            
+            // Используем openLink из Telegram WebApp API, если доступен
+            if (tg.openLink) {
+                tg.openLink(inviteLink);
+            } else {
+                window.open(inviteLink, '_blank');
+            }
+        } else {
+            // Fallback для случаев, когда Telegram WebApp недоступен
+            const botUrl = 'https://t.me/cirrusapprovo_bot?startapp=invite';
+            const text = 'Приглашаю тебя принять участие в проекте в Cirrus Approvo!';
+            const inviteLink = `https://t.me/share/url?url=${encodeURIComponent(botUrl)}&text=${encodeURIComponent(text)}`;
+            window.open(inviteLink, '_blank');
+        }
+    };
 
     const handleInputFocus = () => {
         if (searchQuery.trim().length >= 2 && users.length > 0) {
@@ -188,10 +211,24 @@ export default function CustomDropDownInput({
                             Поиск...
                         </div>
                     ) : users.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-[#9CA3AF] text-center">
-                            {searchQuery.trim().length < 2
-                                ? "Введите минимум 2 символа для поиска"
-                                : "Пользователи не найдены"}
+                        <div className="px-3 py-2 text-sm text-[#9CA3AF] flex items-center justify-between gap-2">
+                            <span className="flex-1 text-center">
+                                {searchQuery.trim().length < 2
+                                    ? "Введите минимум 2 символа для поиска"
+                                    : "Пользователи не найдены"}
+                            </span>
+                            {searchQuery.trim().length >= 2 && (
+                                <button
+                                    type="button"
+                                    onClick={generateInviteLink}
+                                    className="text-[#135bec] hover:text-[#1E40AF] transition-colors font-medium whitespace-nowrap"
+                                    style={{
+                                        fontFamily: "var(--font-onest), -apple-system, sans-serif",
+                                    }}
+                                >
+                                    Пригласить
+                                </button>
+                            )}
                         </div>
                     ) : (
                         users.map((user) => (
