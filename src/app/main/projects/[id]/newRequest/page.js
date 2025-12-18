@@ -134,7 +134,7 @@ export default function NewRequestPage() {
                             <label className="text-sm font-medium text-[#6B7280]">
                                 Дата доставки *
                             </label>
-                            <div className="w-full min-w-0 overflow-hidden" style={{ width: "100%", maxWidth: "100%" }}>
+                            <div className="w-[90%] min-w-0 overflow-hidden">
                                 <input
                                     type="date"
                                     value={deliveryDate}
