@@ -123,7 +123,7 @@ export default function CustomDropDownInput({
             if (tg.openLink) {
                 tg.openLink(inviteLink);
             } else {
-                window.open(inviteLink, '_blank');
+                window.open(inviteLink);
             }
         } else {
             // Fallback для случаев, когда Telegram WebApp недоступен
