@@ -111,27 +111,12 @@ export default function CustomDropDownInput({
         }
     };
     const generateInviteLink = () => {
-        if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-            // Используем Telegram WebApp API для генерации invite link
-            const tg = window.Telegram.WebApp;
-            const botUrl = 'https://t.me/cirrusapprovo_bot?startapp';
-            const text = 'Приглашаю тебя принять участие в проекте в Cirrus Approvo!';
-            
-            const inviteLink = `https://t.me/share/url?url=${botUrl}&text=${text}`;
-            
-            // Используем openLink из Telegram WebApp API, если доступен
-            if (tg.openLink) {
-                tg.openLink(inviteLink);
-            } else {
-                window.open(inviteLink);
-            }
-        } else {
-            // Fallback для случаев, когда Telegram WebApp недоступен
-            const botUrl = 'https://t.me/cirrusapprovo_bot?startapp';
-            const text = 'Приглашаю тебя принять участие в проекте в Cirrus Approvo!';
-            const inviteLink = `https://t.me/share/url?url=${botUrl}&text=${text}`;
-            window.open(inviteLink);
-        }
+        const botUrl = 'https://t.me/cirrusapprovo_bot?startapp';
+        const text = 'Приглашаю тебя принять участие в проекте в Cirrus Approvo!';
+        const inviteLink = `https://t.me/share/url?url=${botUrl}&text=${text}`;
+        
+        // Открываем ссылку для шаринга в Telegram
+        window.open(inviteLink);
     };
 
     const handleInputFocus = () => {
