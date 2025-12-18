@@ -29,7 +29,6 @@ export default function TelegramBackButton({ onClick }) {
     return () => {
       try {
         tg.BackButton.offClick(handleClick);
-        tg.BackButton.hide();
       } catch (e) {
         // ignore
       }

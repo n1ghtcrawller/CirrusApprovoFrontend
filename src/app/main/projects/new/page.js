@@ -11,6 +11,32 @@ export default function NewProjectPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
 
+    const handleEnterAsTab = (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+
+            const form = e.currentTarget.form;
+            if (!form) return;
+
+            const elements = Array.from(form.elements).filter((el) => {
+                return (
+                    el.tagName !== "FIELDSET" &&
+                    !el.disabled &&
+                    el.type !== "hidden" &&
+                    el.tabIndex !== -1
+                );
+            });
+
+            const index = elements.indexOf(e.currentTarget);
+            if (index >= 0 && index < elements.length - 1) {
+                const next = elements[index + 1];
+                if (next && typeof next.focus === "function") {
+                    next.focus();
+                }
+            }
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -54,12 +80,7 @@ export default function NewProjectPage() {
         <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
             <TelegramBackButton/>
             <div className="flex w-full max-w-2xl flex-col items-start gap-6">
-                <button
-                    onClick={() => router.back()}
-                    className="text-sm text-[#6B7280] hover:text-[#111827] transition-colors"
-                >
-                    ← Назад
-                </button>
+                
 
                 <h1 className="text-4xl font-bold text-[#111827] leading-[0.9]">
                     Новый проект
@@ -81,6 +102,7 @@ export default function NewProjectPage() {
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
+                                onKeyDown={handleEnterAsTab}
                                 placeholder="Строительство жилого комплекса"
                                 className="w-full rounded-xl bg-white border border-[#E5E7EB] px-4 py-3 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
                                 style={{

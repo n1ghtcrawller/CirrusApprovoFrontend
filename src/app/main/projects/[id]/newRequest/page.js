@@ -15,6 +15,32 @@ export default function NewRequestPage() {
     ]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const handleEnterAsTab = (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+
+            const form = e.currentTarget.form;
+            if (!form) return;
+
+            const elements = Array.from(form.elements).filter((el) => {
+                return (
+                    el.tagName !== "FIELDSET" &&
+                    !el.disabled &&
+                    el.type !== "hidden" &&
+                    el.tabIndex !== -1
+                );
+            });
+
+            const index = elements.indexOf(e.currentTarget);
+            if (index >= 0 && index < elements.length - 1) {
+                const next = elements[index + 1];
+                if (next && typeof next.focus === "function") {
+                    next.focus();
+                }
+            }
+        }
+    };
+
     const addItem = () => {
         setItems([...items, { name: "", unit: "", quantity: "" }]);
     };
@@ -98,12 +124,6 @@ export default function NewRequestPage() {
         <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-20 px-6 overflow-x-hidden">
             <TelegramBackButton/>
             <div className="flex w-full max-w-2xl flex-col items-start gap-6 min-w-0">
-                <button
-                    onClick={() => router.back()}
-                    className="text-sm text-[#6B7280] hover:text-[#111827] transition-colors"
-                >
-                    ← Назад
-                </button>
 
                 <h1 className="text-4xl font-bold text-[#111827] leading-[0.9]">
                     Новая заявка
@@ -119,6 +139,7 @@ export default function NewRequestPage() {
                                     type="date"
                                     value={deliveryDate}
                                     onChange={(e) => setDeliveryDate(e.target.value)}
+                                    onKeyDown={handleEnterAsTab}
                                     className="w-full rounded-xl bg-white border border-[#E5E7EB] px-4 py-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
                                     style={{
                                         fontFamily: "var(--font-onest), -apple-system, sans-serif",
@@ -190,6 +211,7 @@ export default function NewRequestPage() {
                                                 type="text"
                                                 value={item.name}
                                                 onChange={(e) => updateItem(index, "name", e.target.value)}
+                                                onKeyDown={handleEnterAsTab}
                                                 placeholder="Цемент"
                                                 className="w-full rounded-lg bg-white border border-[#E5E7EB] px-3 py-2 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
                                                 style={{
@@ -204,6 +226,7 @@ export default function NewRequestPage() {
                                                 type="text"
                                                 value={item.unit}
                                                 onChange={(e) => updateItem(index, "unit", e.target.value)}
+                                                onKeyDown={handleEnterAsTab}
                                                 placeholder="тонн"
                                                 className="w-full rounded-lg bg-white border border-[#E5E7EB] px-3 py-2 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
                                                 style={{
@@ -218,6 +241,7 @@ export default function NewRequestPage() {
                                                 type="number"
                                                 value={item.quantity}
                                                 onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                                                onKeyDown={handleEnterAsTab}
                                                 placeholder="500"
                                                 min="0"
                                                 step="0.01"

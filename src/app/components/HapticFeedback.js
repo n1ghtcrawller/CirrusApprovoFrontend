@@ -39,14 +39,25 @@ export const HapticNotificationType = {
 /**
  * Тактильная обратная связь при взаимодействии (нажатие кнопки, клик и т.д.)
  * @param {string} style - Стиль вибрации (light, medium, heavy, rigid, soft)
+ *
+ * В Telegram WebApp хаптики живут в объекте WebApp.HapticFeedback,
+ * а не напрямую на WebApp, поэтому вызываем:
+ * Telegram.WebApp.HapticFeedback.impactOccurred(style)
  */
 export const impactOccurred = (style = HapticImpactStyle.MEDIUM) => {
-    if (isTelegramWebAppAvailable()) {
-        try {
-            window.Telegram.WebApp.impactOccurred(style);
-        } catch (error) {
-            console.warn('Haptic feedback not available:', error);
-        }
+    if (!isTelegramWebAppAvailable()) return;
+
+    const haptic = window.Telegram.WebApp.HapticFeedback;
+
+    if (!haptic || typeof haptic.impactOccurred !== "function") {
+        // В десктопе / вебе / старых версиях Telegram метод может отсутствовать
+        return;
+    }
+
+    try {
+        haptic.impactOccurred(style);
+    } catch (error) {
+        console.warn("Haptic feedback impactOccurred not available:", error);
     }
 };
 
@@ -55,12 +66,18 @@ export const impactOccurred = (style = HapticImpactStyle.MEDIUM) => {
  * @param {string} type - Тип уведомления (error, success, warning)
  */
 export const notificationOccurred = (type = HapticNotificationType.SUCCESS) => {
-    if (isTelegramWebAppAvailable()) {
-        try {
-            window.Telegram.WebApp.notificationOccurred(type);
-        } catch (error) {
-            console.warn('Haptic feedback not available:', error);
-        }
+    if (!isTelegramWebAppAvailable()) return;
+
+    const haptic = window.Telegram.WebApp.HapticFeedback;
+
+    if (!haptic || typeof haptic.notificationOccurred !== "function") {
+        return;
+    }
+
+    try {
+        haptic.notificationOccurred(type);
+    } catch (error) {
+        console.warn("Haptic feedback notificationOccurred not available:", error);
     }
 };
 
@@ -68,12 +85,18 @@ export const notificationOccurred = (type = HapticNotificationType.SUCCESS) => {
  * Тактильная обратная связь при изменении выбора (в списках, селектах)
  */
 export const selectionChanged = () => {
-    if (isTelegramWebAppAvailable()) {
-        try {
-            window.Telegram.WebApp.selectionChanged();
-        } catch (error) {
-            console.warn('Haptic feedback not available:', error);
-        }
+    if (!isTelegramWebAppAvailable()) return;
+
+    const haptic = window.Telegram.WebApp.HapticFeedback;
+
+    if (!haptic || typeof haptic.selectionChanged !== "function") {
+        return;
+    }
+
+    try {
+        haptic.selectionChanged();
+    } catch (error) {
+        console.warn("Haptic feedback selectionChanged not available:", error);
     }
 };
 

@@ -196,12 +196,7 @@ export default function ProjectTeamPage() {
         <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
             <TelegramBackButton/>
             <div className="flex w-full max-w-2xl flex-col items-start gap-6">
-                <button
-                    onClick={() => router.back()}
-                    className="text-sm text-[#6B7280] hover:text-[#111827] transition-colors"
-                >
-                    ← Назад
-                </button>
+                
 
                 <h1 className="text-4xl font-bold text-[#111827] leading-[0.9]">
                     Команда проекта
