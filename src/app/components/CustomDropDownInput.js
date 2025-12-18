@@ -127,10 +127,10 @@ export default function CustomDropDownInput({
             }
         } else {
             // Fallback для случаев, когда Telegram WebApp недоступен
-            const botUrl = 'https://t.me/cirrusapprovo_bot?startapp=invite';
+            const botUrl = 'https://t.me/cirrusapprovo_bot?startapp';
             const text = 'Приглашаю тебя принять участие в проекте в Cirrus Approvo!';
             const inviteLink = `https://t.me/share/url?url=${encodeURIComponent(botUrl)}&text=${encodeURIComponent(text)}`;
-            window.open(inviteLink, '_blank');
+            window.open(inviteLink);
         }
     };
 
