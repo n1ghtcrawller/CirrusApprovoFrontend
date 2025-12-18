@@ -14,14 +14,43 @@ export default function MainLayout({ children }) {
 
   useEffect(() => {
     // Инициализация Telegram Web App для расширения на весь экран
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
-      // Запрашиваем полноэкранный режим, если метод доступен
-      if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
-        window.Telegram.WebApp.requestFullscreen();
-      }
+    if (typeof window === "undefined" || !window.Telegram?.WebApp) return;
+
+    const tg = window.Telegram.WebApp;
+
+    tg.ready();
+    tg.expand();
+
+    // Запрашиваем полноэкранный режим, если метод доступен
+    if (typeof tg.requestFullscreen === "function") {
+      tg.requestFullscreen();
     }
+
+    // Стараемся не давать мини‑приложению оставаться свернутым:
+    // как только высота стабилизировалась и мини‑приложение не развернуто — разворачиваем.
+    const handleViewportChanged = ({ isStateStable }) => {
+      try {
+        if (isStateStable && !tg.isExpanded) {
+          tg.expand();
+        }
+      } catch {
+        // игнорируем ошибки Telegram WebApp
+      }
+    };
+
+    try {
+      tg.onEvent("viewportChanged", handleViewportChanged);
+    } catch {
+      // если события нет/сломано — молча игнорируем
+    }
+
+    return () => {
+      try {
+        tg.offEvent("viewportChanged", handleViewportChanged);
+      } catch {
+        // ignore
+      }
+    };
   }, []);
 
   const tabs = [
