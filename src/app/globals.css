@@ -108,10 +108,3 @@ img {
   display: block;
 }
 
-/* Исправление проблемы с шириной input[type="date"] на мобильных устройствах */
-input[type="date"]:not(#date-filter) {
-  width: 20% !important;
-  max-width: 20% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
