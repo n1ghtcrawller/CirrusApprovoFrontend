@@ -140,15 +140,7 @@ export default function NewRequestPage() {
                                     value={deliveryDate}
                                     onChange={(e) => setDeliveryDate(e.target.value)}
                                     onKeyDown={handleEnterAsTab}
-                                    className="w-full rounded-xl bg-white border border-[#E5E7EB] px-4 py-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
-                                    style={{
-                                        fontFamily: "var(--font-onest), -apple-system, sans-serif",
-                                        width: "100%",
-                                        maxWidth: "100%",
-                                        boxSizing: "border-box",
-                                        minWidth: "0",
-                                        display: "block",
-                                    }}
+                                    className="w-[90%] rounded-xl bg-white px-4 py-3 text-base text-[#111827] border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
                                     required
                                 />
                             </div>
