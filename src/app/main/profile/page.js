@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { getCurrentUser, updateCurrentUser } from "../../lib/api";
 import { RequestStatusDisplay } from "../../lib/constants";
+import TelegramBackButton from "@/app/components/TelegramBackButton";
 
 export default function Profile() {
     const [user, setUser] = useState(null);
@@ -134,6 +135,7 @@ export default function Profile() {
 
     return (
         <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
+            <TelegramBackButton/>
             <div className="flex w-full max-w-2xl flex-col items-start gap-6">
                 <div className="flex w-full items-center justify-between">
                     <h1 className="text-4xl font-bold text-[#111827] leading-[0.9]">

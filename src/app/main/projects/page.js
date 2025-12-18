@@ -5,6 +5,7 @@ import plus from "../../assets/components/plus.svg";
 import Search from "../../components/Search";
 import ProjectList from "../../components/ProjectList";
 import { getObjects } from "../../lib/api";
+import TelegramBackButton from "@/app/components/TelegramBackButton";
 
 export default function Projects() {
     const router = useRouter();

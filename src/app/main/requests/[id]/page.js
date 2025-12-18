@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { getRequestWithRelations } from "../../../lib/api";
 import CustomButton from "../../../components/СustomButton";
 import Comments from "../../../components/Comments";
+import TelegramBackButton from "@/app/components/TelegramBackButton";
+
 
 export default function RequestDetailPage() {
     const router = useRouter();
@@ -162,14 +164,8 @@ export default function RequestDetailPage() {
 
     return (
         <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
+            <TelegramBackButton/>
             <div className="flex w-full max-w-2xl flex-col items-start gap-6">
-                <button
-                    onClick={() => router.back()}
-                    className="text-sm text-[#6B7280] hover:text-[#111827] transition-colors"
-                >
-                    ← Назад
-                </button>
-
                 <div className="flex w-full flex-col gap-6 rounded-xl bg-white p-6">
                     <div className="flex items-start justify-between gap-3">
                         <div className="flex flex-col gap-2">

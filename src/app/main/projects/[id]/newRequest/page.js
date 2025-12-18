@@ -3,6 +3,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useState } from "react";
 import CustomButton from "../../../../components/СustomButton";
 import { createRequest } from "../../../../lib/api";
+import TelegramBackButton from "@/app/components/TelegramBackButton";
 
 export default function NewRequestPage() {
     const router = useRouter();
@@ -95,6 +96,7 @@ export default function NewRequestPage() {
 
     return (
         <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-20 px-6 overflow-x-hidden">
+            <TelegramBackButton/>
             <div className="flex w-full max-w-2xl flex-col items-start gap-6 min-w-0">
                 <button
                     onClick={() => router.back()}
@@ -189,7 +191,7 @@ export default function NewRequestPage() {
                                                 value={item.name}
                                                 onChange={(e) => updateItem(index, "name", e.target.value)}
                                                 placeholder="Цемент"
-                                                className="w-full rounded-lg bg-white border border-[#E5E7EB] px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
+                                                className="w-full rounded-lg bg-white border border-[#E5E7EB] px-3 py-2 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
                                                 style={{
                                                     fontFamily: "var(--font-onest), -apple-system, sans-serif",
                                                 }}
@@ -203,7 +205,7 @@ export default function NewRequestPage() {
                                                 value={item.unit}
                                                 onChange={(e) => updateItem(index, "unit", e.target.value)}
                                                 placeholder="тонн"
-                                                className="w-full rounded-lg bg-white border border-[#E5E7EB] px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
+                                                className="w-full rounded-lg bg-white border border-[#E5E7EB] px-3 py-2 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
                                                 style={{
                                                     fontFamily: "var(--font-onest), -apple-system, sans-serif",
                                                 }}
@@ -219,7 +221,7 @@ export default function NewRequestPage() {
                                                 placeholder="500"
                                                 min="0"
                                                 step="0.01"
-                                                className="w-full rounded-lg bg-white border border-[#E5E7EB] px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
+                                                className="w-full rounded-lg bg-white border border-[#E5E7EB] px-3 py-2 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
                                                 style={{
                                                     fontFamily: "var(--font-onest), -apple-system, sans-serif",
                                                 }}

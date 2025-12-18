@@ -11,6 +11,12 @@ const onest = Onest({
 export const metadata = {
   title: "Cirrus Approvo",
   description: "Cirrus Approvo",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: "no",
+  },
 };
 
 export default function RootLayout({ children }) {

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import User from "../../../../components/User";
 import CustomDropDownInput from "../../../../components/CustomDropDownInput";
 import { getObjectWithMembers, getObjectMembers, addObjectMember, removeObjectMember, updateObjectMemberRole } from "../../../../lib/api";
+import TelegramBackButton from "@/app/components/TelegramBackButton";
 
 export default function ProjectTeamPage() {
     const router = useRouter();
@@ -193,6 +194,7 @@ export default function ProjectTeamPage() {
 
     return (
         <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
+            <TelegramBackButton/>
             <div className="flex w-full max-w-2xl flex-col items-start gap-6">
                 <button
                     onClick={() => router.back()}
