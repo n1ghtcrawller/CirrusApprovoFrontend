@@ -14,6 +14,8 @@ export default function ProjectDetailsPage() {
     const [requests, setRequests] = useState([]);
     const [filteredRequests, setFilteredRequests] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedDate, setSelectedDate] = useState("");
+    const [searchValue, setSearchValue] = useState("");
 
     useEffect(() => {
         const loadData = async () => {
@@ -51,15 +53,38 @@ export default function ProjectDetailsPage() {
     }, [params.id]);
 
     const handleSearch = (value) => {
-        if (!value.trim()) {
-            setFilteredRequests(requests);
-            return;
+        setSearchValue(value);
+        applyFilters(value, selectedDate);
+    };
+
+    const handleDateFilter = (date) => {
+        setSelectedDate(date);
+        applyFilters(searchValue, date);
+    };
+
+    const applyFilters = (search, date) => {
+        let filtered = [...requests];
+
+        // Фильтр по поисковому запросу
+        if (search && search.trim()) {
+            filtered = filtered.filter(request =>
+                request.number.toLowerCase().includes(search.toLowerCase()) ||
+                request.notes?.toLowerCase().includes(search.toLowerCase())
+            );
         }
-        
-        const filtered = requests.filter(request =>
-            request.number.toLowerCase().includes(value.toLowerCase()) ||
-            request.notes?.toLowerCase().includes(value.toLowerCase())
-        );
+
+        // Фильтр по дате доставки
+        if (date) {
+            filtered = filtered.filter(request => {
+                if (!request.delivery_date) return false;
+                const requestDate = new Date(request.delivery_date);
+                const selectedDateObj = new Date(date);
+                
+                // Сравниваем только даты (без времени)
+                return requestDate.toDateString() === selectedDateObj.toDateString();
+            });
+        }
+
         setFilteredRequests(filtered);
     };
 
@@ -120,7 +145,33 @@ export default function ProjectDetailsPage() {
                     <img src={plus.src} alt="plus" className="w-10 h-10" />
                         </button>
             </div>
-            <Search placeholder="Поиск заявки" onSearch={handleSearch} />
+            <div className="flex w-full flex-col gap-4">
+                <div className="flex w-full items-center gap-3">
+                    <div className="flex-1">
+                        <Search placeholder="Поиск заявки" onSearch={handleSearch} />
+                    </div>
+                </div>
+                <div className="w-full">
+                    <label htmlFor="date-filter" className="block text-sm font-medium text-[#6B7280] mb-2">
+                        Фильтр по дате доставки
+                    </label>
+                    <input
+                        id="date-filter"
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => handleDateFilter(e.target.value)}
+                        className="w-full rounded-xl bg-white px-4 py-3 text-base text-[#111827] border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
+                    />
+                    {selectedDate && (
+                        <button
+                            onClick={() => handleDateFilter("")}
+                            className="mt-2 text-sm text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                        >
+                            Сбросить фильтр по дате
+                        </button>
+                    )}
+                </div>
+            </div>
                     {filteredRequests.length > 0 ? (
                         <RequestList 
                             requests={filteredRequests} 
