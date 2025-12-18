@@ -73,11 +73,11 @@ export default function ProjectDetailsPage() {
             );
         }
 
-        // Фильтр по дате доставки
+        // Фильтр по дате создания
         if (date) {
             filtered = filtered.filter(request => {
-                if (!request.delivery_date) return false;
-                const requestDate = new Date(request.delivery_date);
+                if (!request.created_at) return false;
+                const requestDate = new Date(request.created_at);
                 const selectedDateObj = new Date(date);
                 
                 // Сравниваем только даты (без времени)
@@ -153,7 +153,7 @@ export default function ProjectDetailsPage() {
                 </div>
                 <div className="w-full">
                     <label htmlFor="date-filter" className="block text-sm font-medium text-[#6B7280] mb-2">
-                        Фильтр по дате доставки
+                        Фильтр по дате создания
                     </label>
                     <input
                         id="date-filter"
