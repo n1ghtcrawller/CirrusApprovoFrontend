@@ -160,7 +160,7 @@ export default function ProjectDetailsPage() {
                         type="date"
                         value={selectedDate}
                         onChange={(e) => handleDateFilter(e.target.value)}
-                        className="w-[90%] rounded-xl bg-white px-4 py-3 text-base text-[#111827] border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
+                        className="w-[10%] rounded-xl bg-white px-4 py-3 text-base text-[#111827] border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
                     />
                     {selectedDate && (
                         <button
