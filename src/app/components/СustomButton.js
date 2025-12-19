@@ -2,11 +2,11 @@
 import { HapticImpactStyle, impactOccurred } from './HapticFeedback';
 
 
-export default function CustomButton({ width, onClick, children, disabled = false }) {
+export default function CustomButton({ width, onClick, children, disabled = false, fontSize }) {
   const style = {
     height: "50px",
     fontFamily: "var(--font-onest), -apple-system, sans-serif",
-    fontSize: "24px",
+    fontSize: fontSize || "24px",
     fontWeight: "500",
     lineHeight: "28px",
     letterSpacing: "0.01em",

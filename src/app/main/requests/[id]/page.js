@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getRequestWithRelations } from "../../../lib/api";
+import { getRequestWithRelations, getCurrentUser, getObjectWithMembers, getObjectMembers } from "../../../lib/api";
 import CustomButton from "../../../components/СustomButton";
 import Comments from "../../../components/Comments";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
@@ -12,6 +12,8 @@ export default function RequestDetailPage() {
     const params = useParams();
     const [request, setRequest] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [userRoleInObject, setUserRoleInObject] = useState(null);
 
     useEffect(() => {
         const loadRequest = async () => {
@@ -19,6 +21,40 @@ export default function RequestDetailPage() {
             try {
                 const data = await getRequestWithRelations(parseInt(params.id));
                 setRequest(data);
+                
+                // Загружаем текущего пользователя
+                try {
+                    const user = await getCurrentUser();
+                    setCurrentUser(user);
+                    
+                    // Загружаем объект с участниками для определения роли пользователя
+                    if (data.object_id) {
+                        try {
+                            const objectData = await getObjectWithMembers(data.object_id);
+                            const membersData = await getObjectMembers(data.object_id);
+                            
+                            // Проверяем, является ли пользователь владельцем (директором)
+                            if (objectData.owner && objectData.owner.id === user.id) {
+                                setUserRoleInObject('director');
+                            } else {
+                                // Ищем пользователя в списке участников
+                                const userMember = membersData.find(m => m.user_id === user.id);
+                                if (userMember) {
+                                    setUserRoleInObject(userMember.role);
+                                } else {
+                                    setUserRoleInObject(null);
+                                }
+                            }
+                        } catch (error) {
+                            console.error("Ошибка загрузки объекта:", error);
+                            setUserRoleInObject(null);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Ошибка загрузки пользователя:", error);
+                    setCurrentUser(null);
+                    setUserRoleInObject(null);
+                }
             } catch (error) {
                 console.error("Ошибка загрузки заявки:", error);
                 if (error.response?.status === 401) {
@@ -109,7 +145,7 @@ export default function RequestDetailPage() {
             director_approved: {
                 role: "accountant",
                 role_display: roleDisplayMap.accountant,
-                action: "Оплачтить счёт",
+                action: "Отметить оплаченным",
             },
             accountant_paid: {
                 role: "foreman",
@@ -130,8 +166,8 @@ export default function RequestDetailPage() {
         const routeMap = {
             "Добавить счёт": "add_invoice",
             "Подтвердить счёт": "invoice_agreement",
-            "Оплачтить счёт": "accountants_payment",
-            "Подтвердить получение ": "foreman_agreement",
+            "Отметить как оплачено": "accountants_payment",
+            "Подтвердить получение": "foreman_agreement",
             "Отгрузить документы": "documents_ship",
         };
         return routeMap[action] || null;
@@ -310,6 +346,12 @@ export default function RequestDetailPage() {
                         return null;
                     }
 
+                    // Определяем, может ли текущий пользователь выполнить действие
+                    // Если role === null, то действие может выполнить любой участник объекта
+                    const canPerformAction = pendingAction.role === null 
+                        ? userRoleInObject !== null // Любой участник объекта может выполнить
+                        : userRoleInObject === pendingAction.role; // Только пользователь с нужной ролью
+
                     return (
                         <div className="flex w-full flex-col gap-3 rounded-xl bg-white p-6">
                             <div className="flex flex-col gap-2">
@@ -326,6 +368,7 @@ export default function RequestDetailPage() {
                                             console.error("Неизвестное действие:", pendingAction.action);
                                         }
                                     }}
+                                    disabled={!canPerformAction}
                                 >
                                     {pendingAction.action}
                                 </CustomButton>

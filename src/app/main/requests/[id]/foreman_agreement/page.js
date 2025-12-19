@@ -173,6 +173,7 @@ export default function ForemanAgreement() {
                             width="100%"
                             onClick={handleConfirmReceipt}
                             disabled={isSubmitting}
+                            fontSize="18px"
                         >
                             {isSubmitting ? "Подтверждение..." : "Подтвердить получение"}
                         </CustomButton>
