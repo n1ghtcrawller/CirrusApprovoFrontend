@@ -109,12 +109,12 @@ export default function RequestDetailPage() {
             director_approved: {
                 role: "accountant",
                 role_display: roleDisplayMap.accountant,
-                action: "Отметить как оплачено",
+                action: "Оплачтить счёт",
             },
             accountant_paid: {
                 role: "foreman",
                 role_display: roleDisplayMap.foreman,
-                action: "Подтвердить получение материалов",
+                action: "Подтвердить получение",
             },
             foreman_confirmed_receipt: {
                 role: null,
@@ -130,8 +130,8 @@ export default function RequestDetailPage() {
         const routeMap = {
             "Добавить счёт": "add_invoice",
             "Подтвердить счёт": "invoice_agreement",
-            "Отметить как оплачено": "accountants_payment",
-            "Подтвердить получение материалов": "foreman_agreement",
+            "Оплачтить счёт": "accountants_payment",
+            "Подтвердить получение ": "foreman_agreement",
             "Отгрузить документы": "documents_ship",
         };
         return routeMap[action] || null;
