@@ -180,7 +180,7 @@ export default function InvoiceAgreement() {
                             onClick={handleApprove}
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? "Подтверждение..." : "Подтвердить счет"}
+                            {isSubmitting ? "Подтверждение..." : "Подтвердить"}
                         </CustomButton>
                     </div>
                 </div>

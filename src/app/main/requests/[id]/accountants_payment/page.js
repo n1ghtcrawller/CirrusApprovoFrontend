@@ -150,7 +150,7 @@ export default function AccountantsPayment() {
                             onClick={handleMarkAsPaid}
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? "Отметка..." : "Отметить как оплачено"}
+                            {isSubmitting ? "Отметка..." : "Оплачено"}
                         </CustomButton>
                     </div>
                 </div>

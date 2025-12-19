@@ -167,19 +167,17 @@ export default function RequestDetailPage() {
             <TelegramBackButton/>
             <div className="flex w-full max-w-2xl flex-col items-start gap-6">
                 <div className="flex w-full flex-col gap-6 rounded-xl bg-white p-6">
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="flex flex-col gap-2">
-                            <h1 className="text-3xl font-bold text-[#111827]">{request.number}</h1>
-                            <span className="text-sm text-[#9CA3AF]">
-                                Создана: {formatDate(request.created_at)}
-                            </span>
-                        </div>
+                    <div className="flex flex-col gap-2">
+                        <h1 className="text-3xl font-bold text-[#111827]">{request.number}</h1>
                         <span
-                            className={`rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap ${getStatusColor(
+                            className={`rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap w-fit ${getStatusColor(
                                 request.status
                             )}`}
                         >
                             {getStatusLabel(request.status)}
+                        </span>
+                        <span className="text-sm text-[#9CA3AF]">
+                            Создана: {formatDate(request.created_at)}
                         </span>
                     </div>
 
