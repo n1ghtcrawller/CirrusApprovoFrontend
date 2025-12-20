@@ -21,6 +21,7 @@ export default function DocumentViewer({ documentId, onClose }) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [pageWidth, setPageWidth] = useState(800);
+    const [scale, setScale] = useState(1.5);
 
     useEffect(() => {
         const loadDocument = async () => {
@@ -54,13 +55,22 @@ export default function DocumentViewer({ documentId, onClose }) {
     useEffect(() => {
         const updateWidth = () => {
             if (typeof window !== 'undefined') {
-                setPageWidth(window.innerWidth > 768 ? 800 : window.innerWidth - 32);
+                const width = window.innerWidth > 768 ? 800 : window.innerWidth - 32;
+                setPageWidth(width);
             }
         };
 
         updateWidth();
         window.addEventListener('resize', updateWidth);
         return () => window.removeEventListener('resize', updateWidth);
+    }, []);
+
+    // Определяем оптимальный scale на основе ширины экрана
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const devicePixelRatio = window.devicePixelRatio || 1;
+            setScale(Math.max(1.5, devicePixelRatio));
+        }
     }, []);
 
     if (isLoading) {
@@ -132,34 +142,61 @@ export default function DocumentViewer({ documentId, onClose }) {
                                         <p className="text-[#6B7280]">Загрузка PDF...</p>
                                     </div>
                                 }
+                                options={{
+                                    cMapUrl: '/cmaps/',
+                                    cMapPacked: true,
+                                    standardFontDataUrl: '/standard_fonts/',
+                                }}
                             >
                                 <Page
                                     pageNumber={pageNumber}
                                     className="shadow-lg"
                                     width={pageWidth}
+                                    scale={scale}
+                                    renderTextLayer={false}
+                                    renderAnnotationLayer={false}
                                 />
                             </Document>
                             
-                            {/* Навигация по страницам */}
+                            {/* Навигация по страницам и масштаб */}
                             {numPages && (
-                                <div className="flex items-center gap-4 bg-white rounded-lg px-4 py-2 shadow-sm">
-                                    <button
-                                        onClick={() => setPageNumber(prev => Math.max(1, prev - 1))}
-                                        disabled={pageNumber <= 1}
-                                        className="px-3 py-1 bg-[#3B82F6] text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#2563EB] transition-colors"
-                                    >
-                                        Назад
-                                    </button>
-                                    <span className="text-sm text-[#6B7280]">
-                                        Страница {pageNumber} из {numPages}
-                                    </span>
-                                    <button
-                                        onClick={() => setPageNumber(prev => Math.min(numPages, prev + 1))}
-                                        disabled={pageNumber >= numPages}
-                                        className="px-3 py-1 bg-[#3B82F6] text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#2563EB] transition-colors"
-                                    >
-                                        Вперед
-                                    </button>
+                                <div className="flex flex-col gap-3 bg-white rounded-lg px-4 py-3 shadow-sm">
+                                    <div className="flex items-center justify-center gap-4">
+                                        <button
+                                            onClick={() => setPageNumber(prev => Math.max(1, prev - 1))}
+                                            disabled={pageNumber <= 1}
+                                            className="px-3 py-1 bg-[#3B82F6] text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#2563EB] transition-colors"
+                                        >
+                                            Назад
+                                        </button>
+                                        <span className="text-sm text-[#6B7280]">
+                                            Страница {pageNumber} из {numPages}
+                                        </span>
+                                        <button
+                                            onClick={() => setPageNumber(prev => Math.min(numPages, prev + 1))}
+                                            disabled={pageNumber >= numPages}
+                                            className="px-3 py-1 bg-[#3B82F6] text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#2563EB] transition-colors"
+                                        >
+                                            Вперед
+                                        </button>
+                                    </div>
+                                    <div className="flex items-center justify-center gap-3">
+                                        <button
+                                            onClick={() => setScale(prev => Math.max(0.5, prev - 0.25))}
+                                            className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                                        >
+                                            −
+                                        </button>
+                                        <span className="text-sm text-[#6B7280] min-w-[60px] text-center">
+                                            {Math.round(scale * 100)}%
+                                        </span>
+                                        <button
+                                            onClick={() => setScale(prev => Math.min(3, prev + 0.25))}
+                                            className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </>
