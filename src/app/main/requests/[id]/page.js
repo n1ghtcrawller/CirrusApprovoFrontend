@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getRequestWithRelations, openDocument, getCurrentUser, getObjectWithMembers, getObjectMembers } from "../../../lib/api";
+import { getRequestWithRelations, openDocument, deleteDocument, getCurrentUser, getObjectWithMembers, getObjectMembers } from "../../../lib/api";
 import CustomButton from "../../../components/СustomButton";
 import Comments from "../../../components/Comments";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
@@ -133,6 +133,25 @@ export default function RequestDetailPage() {
         } catch (error) {
             console.error("Ошибка при открытии документа:", error);
             alert("Не удалось открыть документ. Попробуйте позже.");
+        }
+    };
+
+    const handleDeleteDocument = async (e, doc) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (!confirm(`Вы уверены, что хотите удалить документ "${doc.name}"?`)) {
+            return;
+        }
+        
+        try {
+            await deleteDocument(doc.id);
+            // Перезагружаем заявку для обновления списка документов
+            const data = await getRequestWithRelations(parseInt(params.id));
+            setRequest(data);
+        } catch (error) {
+            console.error("Ошибка при удалении документа:", error);
+            alert("Не удалось удалить документ. Попробуйте позже.");
         }
     };
 
@@ -282,18 +301,31 @@ export default function RequestDetailPage() {
                             {request.documents.map((doc) => (
                                 <div
                                     key={doc.id}
-                                    onClick={(e) => handleDocumentClick(e, doc)}
-                                    className="flex items-center justify-between gap-4 rounded-lg bg-[#f6f6f8] p-4 hover:bg-[#E5E7EB] transition-colors cursor-pointer"
+                                    className="flex items-center justify-between gap-4 rounded-lg bg-[#f6f6f8] p-4 hover:bg-[#E5E7EB] transition-colors"
                                 >
-                                    <div className="flex flex-col gap-1">
-                                        <span className="font-medium text-[#111827]">{doc.name}</span>
-                                        <span className="text-xs text-[#9CA3AF]">
-                                            {formatFileSize(doc.file_size)} • {formatDate(doc.created_at)}
+                                    <div
+                                        onClick={(e) => handleDocumentClick(e, doc)}
+                                        className="flex items-center justify-between gap-4 flex-1 cursor-pointer"
+                                    >
+                                        <div className="flex flex-col gap-1">
+                                            <span className="font-medium text-[#111827]">{doc.name}</span>
+                                            <span className="text-xs text-[#9CA3AF]">
+                                                {formatFileSize(doc.file_size)} • {formatDate(doc.created_at)}
+                                            </span>
+                                        </div>
+                                        <span className="text-xs text-[#6B7280] bg-white px-2 py-1 rounded">
+                                            {doc.document_type}
                                         </span>
                                     </div>
-                                    <span className="text-xs text-[#6B7280] bg-white px-2 py-1 rounded">
-                                        {doc.document_type}
-                                    </span>
+                                    <button
+                                        onClick={(e) => handleDeleteDocument(e, doc)}
+                                        className="ml-2 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                                        title="Удалить документ"
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M7.66683 4V10.6667H2.3335V4H7.66683ZM6.66683 0H3.3335L2.66683 0.666667H0.333496V2H9.66683V0.666667H7.3335L6.66683 0ZM9.00016 2.66667H1.00016V10.6667C1.00016 11.4 1.60016 12 2.3335 12H7.66683C8.40016 12 9.00016 11.4 9.00016 10.6667V2.66667Z" fill="#EF4444"/>
+                                        </svg>
+                                    </button>
                                 </div>
                             ))}
                         </div>
