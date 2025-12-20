@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { downloadDocument } from "../lib/api";
 
-// Настройка worker для react-pdf
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Настройка worker для react-pdf - используем локальный worker
+if (typeof window !== 'undefined') {
+    pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+}
 
 /**
  * Компонент для просмотра PDF документов
