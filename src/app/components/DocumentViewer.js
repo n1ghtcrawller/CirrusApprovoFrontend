@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { downloadDocument } from "../lib/api";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-import "react-pdf/dist/esm/Page/TextLayer.css";
 
 // Настройка worker для react-pdf
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -20,6 +18,7 @@ export default function DocumentViewer({ documentId, onClose }) {
     const [pageNumber, setPageNumber] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [pageWidth, setPageWidth] = useState(800);
 
     useEffect(() => {
         const loadDocument = async () => {
@@ -48,6 +47,19 @@ export default function DocumentViewer({ documentId, onClose }) {
             }
         };
     }, [documentId]);
+
+    // Обновление ширины страницы при изменении размера окна
+    useEffect(() => {
+        const updateWidth = () => {
+            if (typeof window !== 'undefined') {
+                setPageWidth(window.innerWidth > 768 ? 800 : window.innerWidth - 32);
+            }
+        };
+
+        updateWidth();
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
+    }, []);
 
     if (isLoading) {
         return (
@@ -121,9 +133,8 @@ export default function DocumentViewer({ documentId, onClose }) {
                             >
                                 <Page
                                     pageNumber={pageNumber}
-                                    renderTextLayer={true}
-                                    renderAnnotationLayer={true}
                                     className="shadow-lg"
+                                    width={pageWidth}
                                 />
                             </Document>
                             
