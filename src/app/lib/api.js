@@ -371,17 +371,9 @@ export const downloadDocument = async (documentId) => {
  * @param {number} documentId - ID документа
  * @returns {string} URL для просмотра документа
  */
-export const getDocumentViewUrl = (documentId) => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-  const baseUrl = API_BASE_URL.replace(/\/$/, ''); // Убираем trailing slash если есть
-  const url = `${baseUrl}/documents/${documentId}/view`;
-  
-  // Добавляем токен в query параметр для авторизации
-  if (token) {
-    return `${url}?token=${encodeURIComponent(token)}`;
-  }
-  
-  return url;
+export const getDocumentViewUrl = async (documentId) => {
+  const response = await apiClient.get(`/documents/${documentId}/view`)
+  return response.data;
 };
 
 /**
