@@ -371,9 +371,9 @@ export const downloadDocument = async (documentId) => {
  * @param {number} documentId - ID документа
  * @returns {string} URL для просмотра документа
  */
-export const getDocumentViewUrl = (documentId) => {
-  const baseUrl = API_BASE_URL.replace(/\/$/, ''); // Убираем trailing slash если есть
-  return `${baseUrl}/documents/${documentId}/view`;
+export const getDocumentViewUrl = async (documentId) => {
+  const response = await apiClient.get(`/documents/${documentId}/view`) // Убираем trailing slash если есть
+  return response.data;
 };
 
 /**
@@ -397,7 +397,15 @@ export const openDocument = async (documentId, fileName = null, fileType = null)
 
   try {
     // Получаем URL для просмотра документа через новый endpoint /view
-    const viewUrl = getDocumentViewUrl(documentId);
+    // Сервер возвращает URL или данные с URL для просмотра документа
+    const viewData = await getDocumentViewUrl(documentId);
+    
+    // Если сервер возвращает объект с URL, извлекаем URL, иначе используем как есть
+    const viewUrl = typeof viewData === 'string' ? viewData : (viewData.url || viewData.view_url);
+    
+    if (!viewUrl) {
+      throw new Error('URL для просмотра документа не получен от сервера');
+    }
     
     // Открываем документ на той же странице
     // Это работает как для обычных браузеров, так и для Telegram WebApp
