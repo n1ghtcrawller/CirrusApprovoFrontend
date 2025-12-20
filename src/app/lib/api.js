@@ -371,9 +371,9 @@ export const downloadDocument = async (documentId) => {
  * @param {number} documentId - ID документа
  * @returns {string} URL для просмотра документа
  */
-export const getDocumentViewUrl = async (documentId) => {
-  const response = await apiClient.get(`/documents/${documentId}/view`)
-  return response.data;
+export const getDocumentViewUrl = (documentId) => {
+  const baseUrl = API_BASE_URL.replace(/\/$/, ''); // Убираем trailing slash если есть
+  return `${baseUrl}documents/${documentId}/view`;
 };
 
 /**
@@ -399,17 +399,9 @@ export const openDocument = async (documentId, fileName = null, fileType = null)
     // Получаем URL для просмотра документа через новый endpoint /view
     const viewUrl = getDocumentViewUrl(documentId);
     
-    // Проверяем, запущено ли приложение в Telegram
-    const isTelegram = isTelegramWebAppAvailable();
-    
-    if (isTelegram) {
-      // Для Telegram Mini App используем openLink для открытия документа
-      // Telegram откроет документ в своем встроенном просмотрщике
-      window.Telegram.WebApp.openLink(viewUrl);
-    } else {
-      // Для обычных браузеров открываем в той же вкладке
-      window.location.href = viewUrl;
-    }
+    // Открываем документ на той же странице
+    // Это работает как для обычных браузеров, так и для Telegram WebApp
+    window.location.href = viewUrl;
   } catch (error) {
     console.error("Ошибка при открытии документа:", error);
     throw error;
