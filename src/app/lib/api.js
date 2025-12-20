@@ -367,6 +367,13 @@ export const downloadDocument = async (documentId) => {
 };
 
 /**
+ * Проверяет, доступен ли Telegram WebApp
+ */
+const isTelegramWebAppAvailable = () => {
+  return typeof window !== 'undefined' && window.Telegram?.WebApp;
+};
+
+/**
  * Открытие/просмотр документа
  * @param {number} documentId - ID документа
  * @param {string} fileName - Имя файла для скачивания
@@ -374,32 +381,76 @@ export const downloadDocument = async (documentId) => {
  * @returns {Promise<void>}
  */
 export const openDocument = async (documentId, fileName = null, fileType = null) => {
+  if (typeof window === 'undefined') {
+    throw new Error('Метод openDocument может быть вызван только в браузере');
+  }
+
   try {
-    const blob = await downloadDocument(documentId);
+    // Проверяем, запущено ли приложение в Telegram
+    const isTelegram = isTelegramWebAppAvailable();
     
-    // Определяем тип файла для правильного отображения
-    const mimeType = fileType || 'application/octet-stream';
-    const isPdf = mimeType.includes('pdf');
-    const isImage = mimeType.startsWith('image/');
-    
-    // Создаем URL для blob
-    const url = window.URL.createObjectURL(blob);
-    
-    if (isPdf || isImage) {
-      // Для PDF и изображений открываем в новой вкладке
-      window.open(url, '_blank');
+    if (isTelegram) {
+      // Для Telegram Mini App используем blob URL для открытия документа
+      // Telegram откроет документ в своем встроенном просмотрщике
+      const blob = await downloadDocument(documentId);
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // В Telegram WebApp используем openLink для открытия blob URL
+      // Telegram откроет документ в своем встроенном просмотрщике
+      window.Telegram.WebApp.openLink(blobUrl);
+      
+      // Освобождаем память через некоторое время (увеличено для Telegram)
+      setTimeout(() => {
+        try {
+          window.URL.revokeObjectURL(blobUrl);
+        } catch (e) {
+          console.warn('Не удалось освободить URL:', e);
+        }
+      }, 5000);
     } else {
-      // Для других файлов скачиваем
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName || `document_${documentId}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Стандартный способ для обычных браузеров
+      const blob = await downloadDocument(documentId);
+      
+      // Определяем тип файла для правильного отображения
+      const mimeType = fileType || 'application/octet-stream';
+      const isPdf = mimeType.includes('pdf');
+      const isImage = mimeType.startsWith('image/');
+      
+      // Создаем URL для blob
+      const url = window.URL.createObjectURL(blob);
+      
+      if (isPdf || isImage) {
+        // Для PDF и изображений открываем в новой вкладке
+        const newWindow = window.open(url, '_blank');
+        if (!newWindow) {
+          // Если открытие заблокировано, скачиваем файл
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName || `document_${documentId}`;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      } else {
+        // Для других файлов скачиваем
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName || `document_${documentId}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      
+      // Освобождаем память через некоторое время
+      setTimeout(() => {
+        try {
+          window.URL.revokeObjectURL(url);
+        } catch (e) {
+          console.warn('Не удалось освободить URL:', e);
+        }
+      }, 100);
     }
-    
-    // Освобождаем память через некоторое время
-    setTimeout(() => window.URL.revokeObjectURL(url), 100);
   } catch (error) {
     console.error("Ошибка при открытии документа:", error);
     throw error;

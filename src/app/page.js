@@ -11,13 +11,20 @@ export default function Home() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Инициализация Telegram Web App
+    // Инициализация Telegram Web App (глобальные настройки уже установлены в RootLayout)
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
+      const tg = window.Telegram.WebApp;
+      
+      // Глобальные настройки уже установлены в RootLayout, но убеждаемся, что они применены
+      tg.isClosingConfirmationEnabled = true;
+      tg.isVerticalSwipesEnabled = false;
+      tg.isOrientationLocked = true;
+      
+      tg.ready();
+      tg.expand();
       // Запрашиваем полноэкранный режим, если метод доступен
-      if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
-        window.Telegram.WebApp.requestFullscreen();
+      if (typeof tg.requestFullscreen === 'function') {
+        tg.requestFullscreen();
       }
     }
   }, []);

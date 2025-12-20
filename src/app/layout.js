@@ -1,6 +1,7 @@
 import { Onest } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
+import TelegramWebAppInit from "./components/TelegramWebAppInit";
 
 const onest = Onest({
   subsets: ["latin", "cyrillic"],
@@ -29,6 +30,7 @@ export default function RootLayout({ children }) {
           src="https://telegram.org/js/telegram-web-app.js"
           strategy="beforeInteractive"
         />
+        <TelegramWebAppInit />
         {children}
       </body>
     </html>

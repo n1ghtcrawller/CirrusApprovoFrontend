@@ -123,8 +123,12 @@ export default function RequestDetailPage() {
         return (bytes / (1024 * 1024)).toFixed(1) + " МБ";
     };
 
-    const handleDocumentClick = async (doc) => {
+    const handleDocumentClick = async (e, doc) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
         try {
+            console.log("Открытие документа:", doc);
             await openDocument(doc.id, doc.name, doc.file_type);
         } catch (error) {
             console.error("Ошибка при открытии документа:", error);
@@ -278,7 +282,7 @@ export default function RequestDetailPage() {
                             {request.documents.map((doc) => (
                                 <div
                                     key={doc.id}
-                                    onClick={() => handleDocumentClick(doc)}
+                                    onClick={(e) => handleDocumentClick(e, doc)}
                                     className="flex items-center justify-between gap-4 rounded-lg bg-[#f6f6f8] p-4 hover:bg-[#E5E7EB] transition-colors cursor-pointer"
                                 >
                                     <div className="flex flex-col gap-1">

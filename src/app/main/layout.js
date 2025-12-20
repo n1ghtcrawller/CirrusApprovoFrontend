@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { HapticImpactStyle, impactOccurred } from "../components/HapticFeedback";
+import { initializeTelegramWebApp } from "../lib/telegramWebApp";
 import projects from "../assets/images/projects.svg";
 import requests from "../assets/images/requests.svg";
 import mechanisation from "../assets/images/mechanisation.svg";
@@ -13,10 +14,16 @@ export default function MainLayout({ children }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Инициализация Telegram Web App для расширения на весь экран
+    // Инициализация Telegram Web App (глобальные настройки уже установлены в RootLayout)
+    // Здесь только убеждаемся, что приложение развернуто
     if (typeof window === "undefined" || !window.Telegram?.WebApp) return;
 
     const tg = window.Telegram.WebApp;
+
+    // Глобальные настройки уже установлены в RootLayout, но убеждаемся, что они применены
+    tg.isClosingConfirmationEnabled = true;
+    tg.isVerticalSwipesEnabled = false;
+    tg.isOrientationLocked = true;
 
     tg.ready();
     tg.expand();
