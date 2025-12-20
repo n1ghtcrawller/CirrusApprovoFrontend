@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getRequestWithRelations, openDocument } from "../../../lib/api";
+import { getRequestWithRelations, openDocument, getCurrentUser, getObjectWithMembers, getObjectMembers } from "../../../lib/api";
 import CustomButton from "../../../components/СustomButton";
 import Comments from "../../../components/Comments";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
@@ -12,6 +12,8 @@ export default function RequestDetailPage() {
     const params = useParams();
     const [request, setRequest] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [userRoleInObject, setUserRoleInObject] = useState(null);
 
     useEffect(() => {
         const loadRequest = async () => {
@@ -19,6 +21,40 @@ export default function RequestDetailPage() {
             try {
                 const data = await getRequestWithRelations(parseInt(params.id));
                 setRequest(data);
+                
+                // Загружаем текущего пользователя
+                try {
+                    const user = await getCurrentUser();
+                    setCurrentUser(user);
+                    
+                    // Загружаем объект с участниками для определения роли пользователя
+                    if (data.object_id) {
+                        try {
+                            const objectData = await getObjectWithMembers(data.object_id);
+                            const membersData = await getObjectMembers(data.object_id);
+                            
+                            // Проверяем, является ли пользователь владельцем (директором)
+                            if (objectData.owner && objectData.owner.id === user.id) {
+                                setUserRoleInObject('director');
+                            } else {
+                                // Ищем пользователя в списке участников
+                                const userMember = membersData.find(m => m.user_id === user.id);
+                                if (userMember) {
+                                    setUserRoleInObject(userMember.role);
+                                } else {
+                                    setUserRoleInObject(null);
+                                }
+                            }
+                        } catch (error) {
+                            console.error("Ошибка загрузки объекта:", error);
+                            setUserRoleInObject(null);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Ошибка загрузки пользователя:", error);
+                    setCurrentUser(null);
+                    setUserRoleInObject(null);
+                }
             } catch (error) {
                 console.error("Ошибка загрузки заявки:", error);
                 if (error.response?.status === 401) {
@@ -118,12 +154,12 @@ export default function RequestDetailPage() {
             director_approved: {
                 role: "accountant",
                 role_display: roleDisplayMap.accountant,
-                action: "Отметить как оплачено",
+                action: "Отметить оплаченным",
             },
             accountant_paid: {
                 role: "foreman",
                 role_display: roleDisplayMap.foreman,
-                action: "Подтвердить получение материалов",
+                action: "Подтвердить получение",
             },
             foreman_confirmed_receipt: {
                 role: null,
@@ -140,7 +176,7 @@ export default function RequestDetailPage() {
             "Добавить счёт": "add_invoice",
             "Подтвердить счёт": "invoice_agreement",
             "Отметить как оплачено": "accountants_payment",
-            "Подтвердить получение материалов": "foreman_agreement",
+            "Подтвердить получение": "foreman_agreement",
             "Отгрузить документы": "documents_ship",
         };
         return routeMap[action] || null;
@@ -176,19 +212,17 @@ export default function RequestDetailPage() {
             <TelegramBackButton/>
             <div className="flex w-full max-w-2xl flex-col items-start gap-6">
                 <div className="flex w-full flex-col gap-6 rounded-xl bg-white p-6">
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="flex flex-col gap-2">
-                            <h1 className="text-3xl font-bold text-[#111827]">{request.number}</h1>
-                            <span className="text-sm text-[#9CA3AF]">
-                                Создана: {formatDate(request.created_at)}
-                            </span>
-                        </div>
+                    <div className="flex flex-col gap-2">
+                        <h1 className="text-3xl font-bold text-[#111827]">{request.number}</h1>
                         <span
-                            className={`rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap ${getStatusColor(
+                            className={`rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap w-fit ${getStatusColor(
                                 request.status
                             )}`}
                         >
                             {getStatusLabel(request.status)}
+                        </span>
+                        <span className="text-sm text-[#9CA3AF]">
+                            Создана: {formatDate(request.created_at)}
                         </span>
                     </div>
 
@@ -322,6 +356,12 @@ export default function RequestDetailPage() {
                         return null;
                     }
 
+                    // Определяем, может ли текущий пользователь выполнить действие
+                    // Если role === null, то действие может выполнить любой участник объекта
+                    const canPerformAction = pendingAction.role === null 
+                        ? userRoleInObject !== null // Любой участник объекта может выполнить
+                        : userRoleInObject === pendingAction.role; // Только пользователь с нужной ролью
+
                     return (
                         <div className="flex w-full flex-col gap-3 rounded-xl bg-white p-6">
                             <div className="flex flex-col gap-2">
@@ -338,6 +378,7 @@ export default function RequestDetailPage() {
                                             console.error("Неизвестное действие:", pendingAction.action);
                                         }
                                     }}
+                                    disabled={!canPerformAction}
                                 >
                                     {pendingAction.action}
                                 </CustomButton>
