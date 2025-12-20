@@ -367,6 +367,24 @@ export const downloadDocument = async (documentId) => {
 };
 
 /**
+ * Получение URL для просмотра документа
+ * @param {number} documentId - ID документа
+ * @returns {string} URL для просмотра документа
+ */
+export const getDocumentViewUrl = (documentId) => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+  const baseUrl = API_BASE_URL.replace(/\/$/, ''); // Убираем trailing slash если есть
+  const url = `${baseUrl}/documents/${documentId}/view`;
+  
+  // Добавляем токен в query параметр для авторизации
+  if (token) {
+    return `${url}?token=${encodeURIComponent(token)}`;
+  }
+  
+  return url;
+};
+
+/**
  * Проверяет, доступен ли Telegram WebApp
  */
 const isTelegramWebAppAvailable = () => {
@@ -374,10 +392,10 @@ const isTelegramWebAppAvailable = () => {
 };
 
 /**
- * Открытие/просмотр документа
+ * Открытие/просмотр документа в той же вкладке
  * @param {number} documentId - ID документа
- * @param {string} fileName - Имя файла для скачивания
- * @param {string} fileType - MIME тип файла (опционально)
+ * @param {string} fileName - Имя файла (не используется, оставлено для совместимости)
+ * @param {string} fileType - MIME тип файла (не используется, оставлено для совместимости)
  * @returns {Promise<void>}
  */
 export const openDocument = async (documentId, fileName = null, fileType = null) => {
@@ -386,69 +404,19 @@ export const openDocument = async (documentId, fileName = null, fileType = null)
   }
 
   try {
+    // Получаем URL для просмотра документа через новый endpoint /view
+    const viewUrl = getDocumentViewUrl(documentId);
+    
     // Проверяем, запущено ли приложение в Telegram
     const isTelegram = isTelegramWebAppAvailable();
     
     if (isTelegram) {
-      // Для Telegram Mini App используем прямой URL к API endpoint
-      // Telegram не поддерживает blob URL, поэтому используем прямой URL с токеном
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        throw new Error('Токен авторизации не найден');
-      }
-      
-      // Создаем прямой URL к API endpoint с токеном в query параметре
-      // ВАЖНО: Сервер должен поддерживать авторизацию через query параметр 'token'
-      // или через заголовок Authorization
-      // Если сервер не поддерживает токен в query, нужно будет настроить прокси endpoint
-      const apiUrl = `${API_BASE_URL}documents/${documentId}/download?token=${encodeURIComponent(token)}`;
-      
-      // В Telegram WebApp используем openLink для открытия документа
+      // Для Telegram Mini App используем openLink для открытия документа
       // Telegram откроет документ в своем встроенном просмотрщике
-      window.Telegram.WebApp.openLink(apiUrl);
+      window.Telegram.WebApp.openLink(viewUrl);
     } else {
-      // Стандартный способ для обычных браузеров
-      const blob = await downloadDocument(documentId);
-      
-      // Определяем тип файла для правильного отображения
-      const mimeType = fileType || 'application/octet-stream';
-      const isPdf = mimeType.includes('pdf');
-      const isImage = mimeType.startsWith('image/');
-      
-      // Создаем URL для blob
-      const url = window.URL.createObjectURL(blob);
-      
-      if (isPdf || isImage) {
-        // Для PDF и изображений открываем в новой вкладке
-        const newWindow = window.open(url, '_blank');
-        if (!newWindow) {
-          // Если открытие заблокировано, скачиваем файл
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = fileName || `document_${documentId}`;
-          link.target = '_blank';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-      } else {
-        // Для других файлов скачиваем
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName || `document_${documentId}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-      
-      // Освобождаем память через некоторое время
-      setTimeout(() => {
-        try {
-          window.URL.revokeObjectURL(url);
-        } catch (e) {
-          console.warn('Не удалось освободить URL:', e);
-        }
-      }, 100);
+      // Для обычных браузеров открываем в той же вкладке
+      window.location.href = viewUrl;
     }
   } catch (error) {
     console.error("Ошибка при открытии документа:", error);
