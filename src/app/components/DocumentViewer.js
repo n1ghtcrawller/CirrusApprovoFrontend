@@ -21,7 +21,7 @@ export default function DocumentViewer({ documentId, onClose }) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [pageWidth, setPageWidth] = useState(800);
-    const [scale, setScale] = useState(1.5);
+    const [scale, setScale] = useState(1.0);
 
     useEffect(() => {
         const loadDocument = async () => {
@@ -65,17 +65,17 @@ export default function DocumentViewer({ documentId, onClose }) {
         return () => window.removeEventListener('resize', updateWidth);
     }, []);
 
-    // Определяем оптимальный scale на основе ширины экрана
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const devicePixelRatio = window.devicePixelRatio || 1;
-            setScale(Math.max(1.5, devicePixelRatio));
-        }
-    }, []);
+    // Определяем оптимальный scale на основе ширины экрана (опционально, можно убрать)
+    // useEffect(() => {
+    //     if (typeof window !== 'undefined') {
+    //         const devicePixelRatio = window.devicePixelRatio || 1;
+    //         setScale(Math.max(1.0, devicePixelRatio));
+    //     }
+    // }, []);
 
     if (isLoading) {
         return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 mb-30">
                 <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
                     <div className="flex flex-col items-center gap-4">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B82F6]"></div>
