@@ -373,7 +373,7 @@ export const downloadDocument = async (documentId) => {
  */
 export const getDocumentViewUrl = (documentId) => {
   const baseUrl = API_BASE_URL.replace(/\/$/, ''); // Убираем trailing slash если есть
-  return `${baseUrl}documents/${documentId}/view`;
+  return `${baseUrl}/documents/${documentId}/view`;
 };
 
 /**
