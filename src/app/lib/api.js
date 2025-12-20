@@ -390,23 +390,22 @@ export const openDocument = async (documentId, fileName = null, fileType = null)
     const isTelegram = isTelegramWebAppAvailable();
     
     if (isTelegram) {
-      // Для Telegram Mini App используем blob URL для открытия документа
-      // Telegram откроет документ в своем встроенном просмотрщике
-      const blob = await downloadDocument(documentId);
-      const blobUrl = window.URL.createObjectURL(blob);
+      // Для Telegram Mini App используем прямой URL к API endpoint
+      // Telegram не поддерживает blob URL, поэтому используем прямой URL с токеном
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('Токен авторизации не найден');
+      }
       
-      // В Telegram WebApp используем openLink для открытия blob URL
-      // Telegram откроет документ в своем встроенном просмотрщике
-      window.Telegram.WebApp.openLink(blobUrl);
+      // Создаем прямой URL к API endpoint с токеном в query параметре
+      // ВАЖНО: Сервер должен поддерживать авторизацию через query параметр 'token'
+      // или через заголовок Authorization
+      // Если сервер не поддерживает токен в query, нужно будет настроить прокси endpoint
+      const apiUrl = `${API_BASE_URL}documents/${documentId}/download?token=${encodeURIComponent(token)}`;
       
-      // Освобождаем память через некоторое время (увеличено для Telegram)
-      setTimeout(() => {
-        try {
-          window.URL.revokeObjectURL(blobUrl);
-        } catch (e) {
-          console.warn('Не удалось освободить URL:', e);
-        }
-      }, 5000);
+      // В Telegram WebApp используем openLink для открытия документа
+      // Telegram откроет документ в своем встроенном просмотрщике
+      window.Telegram.WebApp.openLink(apiUrl);
     } else {
       // Стандартный способ для обычных браузеров
       const blob = await downloadDocument(documentId);
