@@ -15,6 +15,7 @@ export default function RequestDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState(null);
     const [userRoleInObject, setUserRoleInObject] = useState(null);
+    const [viewingDocumentId, setViewingDocumentId] = useState(null);
 
     useEffect(() => {
         const loadRequest = async () => {
