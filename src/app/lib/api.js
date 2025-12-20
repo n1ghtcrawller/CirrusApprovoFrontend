@@ -367,6 +367,46 @@ export const downloadDocument = async (documentId) => {
 };
 
 /**
+ * Открытие/просмотр документа
+ * @param {number} documentId - ID документа
+ * @param {string} fileName - Имя файла для скачивания
+ * @param {string} fileType - MIME тип файла (опционально)
+ * @returns {Promise<void>}
+ */
+export const openDocument = async (documentId, fileName = null, fileType = null) => {
+  try {
+    const blob = await downloadDocument(documentId);
+    
+    // Определяем тип файла для правильного отображения
+    const mimeType = fileType || 'application/octet-stream';
+    const isPdf = mimeType.includes('pdf');
+    const isImage = mimeType.startsWith('image/');
+    
+    // Создаем URL для blob
+    const url = window.URL.createObjectURL(blob);
+    
+    if (isPdf || isImage) {
+      // Для PDF и изображений открываем в новой вкладке
+      window.open(url, '_blank');
+    } else {
+      // Для других файлов скачиваем
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName || `document_${documentId}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    
+    // Освобождаем память через некоторое время
+    setTimeout(() => window.URL.revokeObjectURL(url), 100);
+  } catch (error) {
+    console.error("Ошибка при открытии документа:", error);
+    throw error;
+  }
+};
+
+/**
  * Удаление документа
  * @param {number} documentId - ID документа
  * @returns {Promise<void>}

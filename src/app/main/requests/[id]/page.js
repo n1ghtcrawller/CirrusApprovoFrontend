@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getRequestWithRelations } from "../../../lib/api";
+import { getRequestWithRelations, openDocument } from "../../../lib/api";
 import CustomButton from "../../../components/СustomButton";
 import Comments from "../../../components/Comments";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
@@ -85,6 +85,15 @@ export default function RequestDetailPage() {
         if (bytes < 1024) return bytes + " Б";
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " КБ";
         return (bytes / (1024 * 1024)).toFixed(1) + " МБ";
+    };
+
+    const handleDocumentClick = async (doc) => {
+        try {
+            await openDocument(doc.id, doc.name, doc.file_type);
+        } catch (error) {
+            console.error("Ошибка при открытии документа:", error);
+            alert("Не удалось открыть документ. Попробуйте позже.");
+        }
     };
 
     const getPendingActionByStatus = (status) => {
@@ -235,6 +244,7 @@ export default function RequestDetailPage() {
                             {request.documents.map((doc) => (
                                 <div
                                     key={doc.id}
+                                    onClick={() => handleDocumentClick(doc)}
                                     className="flex items-center justify-between gap-4 rounded-lg bg-[#f6f6f8] p-4 hover:bg-[#E5E7EB] transition-colors cursor-pointer"
                                 >
                                     <div className="flex flex-col gap-1">
