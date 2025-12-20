@@ -75,7 +75,7 @@ export default function DocumentViewer({ documentId, onClose }) {
 
     if (isLoading) {
         return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 mb-30">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 mt-30">
                 <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
                     <div className="flex flex-col items-center gap-4">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B82F6]"></div>
