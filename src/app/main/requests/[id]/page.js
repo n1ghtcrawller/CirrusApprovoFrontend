@@ -5,6 +5,7 @@ import { getRequestWithRelations, openDocument, deleteDocument, getCurrentUser, 
 import CustomButton from "../../../components/СustomButton";
 import Comments from "../../../components/Comments";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
+import DocumentViewer from "../../../components/DocumentViewer";
 
 
 export default function RequestDetailPage() {
@@ -127,12 +128,21 @@ export default function RequestDetailPage() {
         e.preventDefault();
         e.stopPropagation();
         
-        try {
-            console.log("Открытие документа:", doc);
-            await openDocument(doc.id, doc.name, doc.file_type);
-        } catch (error) {
-            console.error("Ошибка при открытии документа:", error);
-            alert("Не удалось открыть документ. Попробуйте позже.");
+        // Проверяем тип файла - для PDF открываем в компоненте, для остальных используем старый способ
+        const isPdf = doc.file_type?.includes('pdf') || doc.name?.toLowerCase().endsWith('.pdf');
+        
+        if (isPdf) {
+            // Открываем PDF в компоненте просмотрщика
+            setViewingDocumentId(doc.id);
+        } else {
+            // Для других типов файлов используем старый способ
+            try {
+                console.log("Открытие документа:", doc);
+                await openDocument(doc.id, doc.name, doc.file_type);
+            } catch (error) {
+                console.error("Ошибка при открытии документа:", error);
+                alert("Не удалось открыть документ. Попробуйте позже.");
+            }
         }
     };
 
@@ -426,6 +436,14 @@ export default function RequestDetailPage() {
                 {/* Комментарии */}
                 <Comments requestId={parseInt(params.id)} />
             </div>
+            
+            {/* Компонент для просмотра PDF документов */}
+            {viewingDocumentId && (
+                <DocumentViewer
+                    documentId={viewingDocumentId}
+                    onClose={() => setViewingDocumentId(null)}
+                />
+            )}
         </main>
     );
 }
