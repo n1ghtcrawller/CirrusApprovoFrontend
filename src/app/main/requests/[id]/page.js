@@ -423,6 +423,7 @@ export default function RequestDetailPage() {
                                             console.error("Неизвестное действие:", pendingAction.action);
                                         }
                                     }}
+                                    fontSize="14"
                                     disabled={!canPerformAction}
                                 >
                                     {pendingAction.action}
