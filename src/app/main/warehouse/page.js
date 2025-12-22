@@ -33,7 +33,7 @@ export default function Warehouse() {
             </div>
 
             {/* Блок с подпиской */}
-            <div className="w-full rounded-xl bg-[#f6f6f8] p-6 border-2 border-[#111827] text-center p-4" style={{ boxShadow: '0 0 20px rgba(17, 24, 39, 0.3), 0 0 40px rgba(17, 24, 39, 0.2)' }}>
+            <div className="w-full rounded-xl bg-[#f6f6f8] p-6 border-2 border-[#111827] text-center mt-4" style={{ boxShadow: '0 0 20px rgba(17, 24, 39, 0.3), 0 0 40px rgba(17, 24, 39, 0.2)' }}>
                 <h3 className="text-lg font-bold text-[#111827] mb-3">
                     Ежемесячная подписка
                 </h3>
@@ -47,7 +47,7 @@ export default function Warehouse() {
                         console.log("Оформление подписки");
                     }}
                 >
-                    Оформить подписку
+                    Оформить
                 </CustomButton>
               </div>
             </div>
