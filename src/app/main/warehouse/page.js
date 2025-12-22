@@ -18,10 +18,9 @@ export default function Warehouse() {
                 <p className="text-base text-[#111827]">
                     Для доступа к расширенному функционалу Склада оформите <span className="font-semibold">Cirrus Plus</span>
                 </p>
-            </div>
 
             {/* Три блока с преимуществами */}
-            <div className="w-full flex flex-col gap-4">
+            <div className="w-full flex flex-col gap-4 mt-4">
                 <div className="w-full rounded-xl bg-[#f6f6f8] p-4 border-2 border-[#111827] text-center" style={{ boxShadow: '0 0 15px rgba(17, 24, 39, 0.25), 0 0 30px rgba(17, 24, 39, 0.15)' }}>
                     <p className="text-lg font-semibold text-[#111827]">Безлимитный учёт</p>
                 </div>
@@ -60,7 +59,9 @@ export default function Warehouse() {
                     Политика конфиденциальности
                 </button>
             </div>
+          </div>
         </div>
+
     </main>
     )  
 }
