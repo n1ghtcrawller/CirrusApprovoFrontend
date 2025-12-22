@@ -5,7 +5,6 @@ import { getRequestWithRelations, openDocument, deleteDocument, getCurrentUser, 
 import CustomButton from "../../../components/СustomButton";
 import Comments from "../../../components/Comments";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
-import DocumentViewer from "../../../components/DocumentViewer";
 
 
 export default function RequestDetailPage() {
@@ -15,7 +14,6 @@ export default function RequestDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState(null);
     const [userRoleInObject, setUserRoleInObject] = useState(null);
-    const [viewingDocumentId, setViewingDocumentId] = useState(null);
 
     useEffect(() => {
         const loadRequest = async () => {
@@ -129,12 +127,12 @@ export default function RequestDetailPage() {
         e.preventDefault();
         e.stopPropagation();
         
-        // Проверяем тип файла - для PDF открываем в компоненте, для остальных используем старый способ
+        // Проверяем тип файла - для PDF открываем на отдельной странице, для остальных используем старый способ
         const isPdf = doc.file_type?.includes('pdf') || doc.name?.toLowerCase().endsWith('.pdf');
         
         if (isPdf) {
-            // Открываем PDF в компоненте просмотрщика
-            setViewingDocumentId(doc.id);
+            // Открываем PDF на отдельной странице
+            router.push(`/main/requests/${params.id}/document/${doc.id}`);
         } else {
             // Для других типов файлов используем старый способ
             try {
@@ -437,14 +435,6 @@ export default function RequestDetailPage() {
                 {/* Комментарии */}
                 <Comments requestId={parseInt(params.id)} />
             </div>
-            
-            {/* Компонент для просмотра PDF документов */}
-            {viewingDocumentId && (
-                <DocumentViewer
-                    documentId={viewingDocumentId}
-                    onClose={() => setViewingDocumentId(null)}
-                />
-            )}
         </main>
     );
 }

@@ -1,20 +1,21 @@
 "use client";
 
+import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import { downloadDocument } from "../lib/api";
+import { downloadDocument } from "../../../../../lib/api";
+import TelegramBackButton from "@/app/components/TelegramBackButton";
 
 // Настройка worker для react-pdf - используем локальный worker
 if (typeof window !== 'undefined') {
     pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
 
-/**
- * Компонент для просмотра PDF документов
- * @param {number} documentId - ID документа
- * @param {function} onClose - Функция для закрытия просмотрщика
- */
-export default function DocumentViewer({ documentId, onClose }) {
+export default function DocumentViewerPage() {
+    const params = useParams();
+    const router = useRouter();
+    const documentId = parseInt(params.documentId);
+    
     const [pdfData, setPdfData] = useState(null);
     const [numPages, setNumPages] = useState(null);
     const [pageNumber, setPageNumber] = useState(1);
@@ -65,52 +66,51 @@ export default function DocumentViewer({ documentId, onClose }) {
         return () => window.removeEventListener('resize', updateWidth);
     }, []);
 
-    // Определяем оптимальный scale на основе ширины экрана (опционально, можно убрать)
-    // useEffect(() => {
-    //     if (typeof window !== 'undefined') {
-    //         const devicePixelRatio = window.devicePixelRatio || 1;
-    //         setScale(Math.max(1.0, devicePixelRatio));
-    //     }
-    // }, []);
+    const handleBack = () => {
+        router.back();
+    };
 
     if (isLoading) {
         return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 mt-30">
-                <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B82F6]"></div>
-                        <p className="text-[#6B7280]">Загрузка документа...</p>
+            <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
+                <TelegramBackButton/>
+                <div className="flex w-full max-w-2xl flex-col items-start gap-12">
+                    <div className="w-full text-center text-[#9CA3AF] py-8">
+                        Загрузка документа...
                     </div>
                 </div>
-            </div>
+            </main>
         );
     }
 
     if (error) {
         return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-                    <div className="flex flex-col items-center gap-4">
-                        <p className="text-red-600">{error}</p>
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 bg-[#3B82F6] text-white rounded-lg hover:bg-[#2563EB] transition-colors"
-                        >
-                            Закрыть
-                        </button>
+            <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
+                <TelegramBackButton/>
+                <div className="flex w-full max-w-2xl flex-col items-start gap-12">
+                    <div className="w-full text-center text-red-600 py-8">
+                        {error}
                     </div>
+                    <button
+                        onClick={handleBack}
+                        className="px-4 py-2 bg-[#3B82F6] text-white rounded-lg hover:bg-[#2563EB] transition-colors"
+                    >
+                        Назад
+                    </button>
                 </div>
-            </div>
+            </main>
         );
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white mt-20">
+        <main className="flex min-h-screen w-full flex-col bg-white">
+            <TelegramBackButton/>
+            
             {/* Заголовок с кнопкой закрытия */}
             <div className="flex items-center justify-between p-4 border-b border-[#E5E7EB] bg-white">
                 <h2 className="text-lg font-semibold text-[#111827]">Просмотр документа</h2>
                 <button
-                    onClick={onClose}
+                    onClick={handleBack}
                     className="p-2 hover:bg-[#F3F4F6] rounded-lg transition-colors"
                     title="Закрыть"
                 >
@@ -203,7 +203,7 @@ export default function DocumentViewer({ documentId, onClose }) {
                     )}
                 </div>
             </div>
-        </div>
+        </main>
     );
 }
 
