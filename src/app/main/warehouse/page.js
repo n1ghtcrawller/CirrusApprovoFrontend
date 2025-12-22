@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
+import CustomButton from "@/app/components/СustomButton";
 
 export default function Warehouse() {
     const router = useRouter();
@@ -8,32 +9,51 @@ export default function Warehouse() {
     return (
     <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
         <TelegramBackButton/>
-        <div className="flex w-full max-w-2xl flex-col items-start gap-12">
-            <h1 className="w-full text-4xl font-bold text-[#111827] leading-[0.9]">
+        <div className="flex w-full max-w-2xl flex-col items-center gap-8">
+            <h1 className="w-full text-4xl font-bold text-[#111827] leading-[0.9] text-center">
                 Склад
             </h1>
             
-            {/* Информационный блок о Cirrus Plus */}
-            <div className="w-full rounded-xl bg-gradient-to-br from-[#3B82F6] to-[#1E40AF] p-6 shadow-lg">
-                <div className="flex flex-col gap-4">
-                    <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                        </div>
-                        <div className="flex-1">
-                            <h2 className="text-xl font-bold text-white mb-2">
-                                Cirrus Plus
-                            </h2>
-                            <p className="text-white/90 text-base leading-relaxed">
-                                Для доступа к расширенному функционалу Склада оформите <span className="font-semibold">Cirrus Plus</span>
-                            </p>
-                        </div>
-                    </div>
+            {/* Основной информационный блок о Cirrus Plus */}
+            <div className="w-full rounded-xl bg-[#f6f6f8] p-6 border-2 border-[#111827] text-center" style={{ boxShadow: '0 0 20px rgba(17, 24, 39, 0.3), 0 0 40px rgba(17, 24, 39, 0.2)' }}>
+                <h2 className="text-2xl font-bold text-[#111827] mb-2">
+                    Cirrus Plus
+                </h2>
+                <p className="text-base text-[#111827]">
+                    Для доступа к расширенному функционалу Склада оформите <span className="font-semibold">Cirrus Plus</span>
+                </p>
+            </div>
+
+            {/* Три блока с преимуществами */}
+            <div className="w-full flex flex-col gap-4">
+                <div className="w-full rounded-xl bg-[#f6f6f8] p-4 border-2 border-[#111827] text-center" style={{ boxShadow: '0 0 15px rgba(17, 24, 39, 0.25), 0 0 30px rgba(17, 24, 39, 0.15)' }}>
+                    <p className="text-lg font-semibold text-[#111827]">Безлимитный учёт</p>
                 </div>
+                <div className="w-full rounded-xl bg-[#f6f6f8] p-4 border-2 border-[#111827] text-center" style={{ boxShadow: '0 0 15px rgba(17, 24, 39, 0.25), 0 0 30px rgba(17, 24, 39, 0.15)' }}>
+                    <p className="text-lg font-semibold text-[#111827]">Аналитика Cirrus Plus</p>
+                </div>
+                <div className="w-full rounded-xl bg-[#f6f6f8] p-4 border-2 border-[#111827] text-center" style={{ boxShadow: '0 0 15px rgba(17, 24, 39, 0.25), 0 0 30px rgba(17, 24, 39, 0.15)' }}>
+                    <p className="text-lg font-semibold text-[#111827]">VIP Поддержка 24/7</p>
+                </div>
+            </div>
+
+            {/* Блок с подпиской */}
+            <div className="w-full rounded-xl bg-[#f6f6f8] p-6 border-2 border-[#111827] text-center" style={{ boxShadow: '0 0 20px rgba(17, 24, 39, 0.3), 0 0 40px rgba(17, 24, 39, 0.2)' }}>
+                <h3 className="text-3xl font-bold text-[#111827] mb-3">
+                    Ежемесячная подписка
+                </h3>
+                <p className="text-4xl font-bold text-[#111827] mb-6">
+                    2999р./мес
+                </p>
+                <CustomButton 
+                    width="100%"
+                    onClick={() => {
+                        // TODO: Добавить логику оформления подписки
+                        console.log("Оформление подписки");
+                    }}
+                >
+                    Оформить подписку
+                </CustomButton>
             </div>
         </div>
     </main>
