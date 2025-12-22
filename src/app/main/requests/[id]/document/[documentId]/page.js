@@ -103,7 +103,7 @@ export default function DocumentViewerPage() {
     }
 
     return (
-        <main className="flex min-h-screen w-full flex-col bg-white">
+        <main className="flex min-h-screen w-full flex-col bg-white mt-20">
             <TelegramBackButton/>
             
             {/* Заголовок с кнопкой закрытия */}
