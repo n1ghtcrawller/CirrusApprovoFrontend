@@ -10,10 +10,6 @@ export default function Warehouse() {
     <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-30 px-6">
         <TelegramBackButton/>
         <div className="flex w-full max-w-2xl flex-col items-center gap-8">
-            <h1 className="w-full text-4xl font-bold text-[#111827] leading-[0.9] text-center">
-                Склад
-            </h1>
-            
             {/* Основной информационный блок о Cirrus Plus */}
             <div className="w-full rounded-xl bg-[#f6f6f8] p-6 border-2 border-[#111827] text-center" style={{ boxShadow: '0 0 20px rgba(17, 24, 39, 0.3), 0 0 40px rgba(17, 24, 39, 0.2)' }}>
                 <h2 className="text-2xl font-bold text-[#111827] mb-2">
@@ -22,7 +18,6 @@ export default function Warehouse() {
                 <p className="text-base text-[#111827]">
                     Для доступа к расширенному функционалу Склада оформите <span className="font-semibold">Cirrus Plus</span>
                 </p>
-            </div>
 
             {/* Три блока с преимуществами */}
             <div className="w-full flex flex-col gap-4">
@@ -54,7 +49,9 @@ export default function Warehouse() {
                 >
                     Оформить подписку
                 </CustomButton>
+              </div>
             </div>
+
         </div>
     </main>
     )  
