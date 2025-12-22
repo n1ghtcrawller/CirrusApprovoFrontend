@@ -18,6 +18,7 @@ export default function Warehouse() {
                 <p className="text-base text-[#111827]">
                     Для доступа к расширенному функционалу Склада оформите <span className="font-semibold">Cirrus Plus</span>
                 </p>
+            </div>
 
             {/* Три блока с преимуществами */}
             <div className="w-full flex flex-col gap-4">
@@ -43,15 +44,22 @@ export default function Warehouse() {
                 <CustomButton 
                     width="100%"
                     onClick={() => {
-                        // TODO: Добавить логику оформления подписки
-                        console.log("Оформление подписки");
+                        router.push("/main/warehouse/pay");
                     }}
                 >
                     Оформить
                 </CustomButton>
-              </div>
             </div>
 
+            {/* Ссылки на политику */}
+            <div className="w-full flex flex-col gap-2 items-center mt-4">
+                <button
+                    onClick={() => router.push("/main/warehouse/policy")}
+                    className="text-sm text-[#6B7280] hover:text-[#111827] transition-colors underline"
+                >
+                    Политика конфиденциальности
+                </button>
+            </div>
         </div>
     </main>
     )  
