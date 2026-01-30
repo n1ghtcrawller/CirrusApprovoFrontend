@@ -1,6 +1,7 @@
 // Роли пользователей в объекте
 export const ObjectRole = {
   DIRECTOR: 'director',                    // Директор (создатель проекта)
+  DEPUTY_DIRECTOR: 'deputy_director',      // Заместитель директора
   FOREMAN: 'foreman',                      // Прораб
   SUPPLY_SPECIALIST: 'supply_specialist',  // Специалист отдела снабжения
   ACCOUNTANT: 'accountant',                // Бухгалтер
@@ -11,6 +12,7 @@ export const ObjectRole = {
 // Отображаемые названия ролей
 export const ObjectRoleDisplay = {
   [ObjectRole.DIRECTOR]: 'Директор',
+  [ObjectRole.DEPUTY_DIRECTOR]: 'Заместитель директора',
   [ObjectRole.FOREMAN]: 'Прораб',
   [ObjectRole.SUPPLY_SPECIALIST]: 'Специалист отдела снабжения',
   [ObjectRole.ACCOUNTANT]: 'Бухгалтер',
@@ -46,7 +48,7 @@ export const StatusTransitionMatrix = {
   },
   [RequestStatus.SUPPLY_ADDED_INVOICE]: {
     nextStatus: RequestStatus.DIRECTOR_APPROVED,
-    allowedRoles: [ObjectRole.DIRECTOR],
+    allowedRoles: [ObjectRole.DIRECTOR, ObjectRole.DEPUTY_DIRECTOR],
   },
   [RequestStatus.DIRECTOR_APPROVED]: {
     nextStatus: RequestStatus.ACCOUNTANT_PAID,

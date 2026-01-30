@@ -168,6 +168,7 @@ export default function RequestDetailPage() {
         const roleDisplayMap = {
             supply_specialist: "Специалист отдела снабжения",
             director: "Директор",
+            deputy_director: "Заместитель директора",
             accountant: "Бухгалтер",
             foreman: "Прораб",
         };
@@ -180,7 +181,7 @@ export default function RequestDetailPage() {
             },
             supply_added_invoice: {
                 role: "director",
-                role_display: roleDisplayMap.director,
+                role_display: "Директор / Заместитель директора",
                 action: "Подтвердить счёт",
             },
             director_approved: {
@@ -403,9 +404,12 @@ export default function RequestDetailPage() {
 
                     // Определяем, может ли текущий пользователь выполнить действие
                     // Если role === null, то действие может выполнить любой участник объекта
+                    // Для "Подтвердить счёт" (role === "director") могут и директор, и заместитель директора
                     const canPerformAction = pendingAction.role === null 
                         ? userRoleInObject !== null // Любой участник объекта может выполнить
-                        : userRoleInObject === pendingAction.role; // Только пользователь с нужной ролью
+                        : pendingAction.role === "director"
+                            ? (userRoleInObject === "director" || userRoleInObject === "deputy_director")
+                            : userRoleInObject === pendingAction.role;
 
                     return (
                         <div className="flex w-full flex-col gap-3 rounded-xl bg-white p-6">

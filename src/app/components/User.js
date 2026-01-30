@@ -14,6 +14,7 @@ export default function User({
 }) {
     const roles = [
         { value: "director", label: "Директор" },
+        { value: "deputy_director", label: "Заместитель директора" },
         { value: "foreman", label: "Прораб" },
         { value: "supply_specialist", label: "Специалист отдела снабжения" },
         { value: "accountant", label: "Бухгалтер" },
