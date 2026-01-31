@@ -310,6 +310,19 @@ export const updateRequestStatus = async (requestId, status) => {
   return response.data;
 };
 
+/**
+ * Подтверждение получения материалов прорабом (с указанием фактически полученных количеств).
+ * Если по всем позициям получено не меньше заказанного — статус заявки переводится в foreman_confirmed_receipt.
+ * Если не всё получено — статус остаётся прежним (подтверждение прорабом).
+ * @param {number} requestId - ID заявки
+ * @param {Array<{ item_id: number, received_quantity: number }>} items - Массив { item_id, received_quantity }
+ * @returns {Promise<Object>} - Обновлённая заявка (в т.ч. status, items с received_quantity)
+ */
+export const updateForemanReceipt = async (requestId, items) => {
+  const response = await apiClient.put(`/requests/${requestId}/foreman-receipt`, { items });
+  return response.data;
+};
+
 // ==================== ДОКУМЕНТЫ ====================
 
 /**

@@ -3,13 +3,13 @@ import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
 import CustomButton from "../../../../components/СustomButton";
-import { getRequestWithRelations, updateRequest, updateRequestStatus } from "../../../../lib/api";
+import { getRequestWithRelations, updateForemanReceipt } from "../../../../lib/api";
 
 export default function ForemanAgreement() {
     const router = useRouter();
     const params = useParams();
     const [request, setRequest] = useState(null);
-    const [receiptNotes, setReceiptNotes] = useState("");
+    const [receivedQuantities, setReceivedQuantities] = useState({});
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
@@ -20,7 +20,14 @@ export default function ForemanAgreement() {
             try {
                 const data = await getRequestWithRelations(parseInt(params.id));
                 setRequest(data);
-                setReceiptNotes(data.receipt_notes || "");
+                const initial = {};
+                if (data.items && data.items.length) {
+                    data.items.forEach((item) => {
+                        const val = item.received_quantity != null ? item.received_quantity : item.quantity;
+                        initial[item.id] = String(val ?? "");
+                    });
+                }
+                setReceivedQuantities(initial);
             } catch (error) {
                 console.error("Ошибка загрузки заявки:", error);
                 if (error.response?.status === 401) {
@@ -42,15 +49,22 @@ export default function ForemanAgreement() {
 
     const isAlreadyConfirmed = request?.status === "foreman_confirmed_receipt" || request?.status === "documents_shipped";
 
+    const handleReceivedQuantityChange = (itemId, value) => {
+        setReceivedQuantities((prev) => ({ ...prev, [itemId]: value }));
+    };
+
     const handleConfirmReceipt = async () => {
         setIsSubmitting(true);
         setError(null);
 
         try {
-            await updateRequest(parseInt(params.id), { receipt_notes: receiptNotes.trim() || null });
-            if (!isAlreadyConfirmed) {
-                await updateRequestStatus(parseInt(params.id), "foreman_confirmed_receipt");
-            }
+            const items = (request.items || []).map((item) => {
+                const raw = receivedQuantities[item.id];
+                const num = raw !== "" && raw !== undefined ? parseFloat(String(raw).replace(",", ".")) : item.quantity;
+                return { item_id: item.id, received_quantity: Number.isFinite(num) ? num : item.quantity };
+            });
+            const updated = await updateForemanReceipt(parseInt(params.id), items);
+            setRequest(updated);
             router.push(`/main/requests/${params.id}`);
         } catch (error) {
             console.error("Ошибка подтверждения получения:", error);
@@ -131,20 +145,31 @@ export default function ForemanAgreement() {
                 {request.items && request.items.length > 0 && (
                     <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
                         <h2 className="text-xl font-bold text-[#111827]">Материалы</h2>
+                        <p className="text-sm text-[#6B7280]">
+                            Укажите фактически полученное количество по каждой позиции. Если получили не всё — введите меньше; статус заявки останется «Подтверждение прорабом» до полного получения.
+                        </p>
                         <div className="flex flex-col gap-3">
                             {request.items.map((item) => (
                                 <div
                                     key={item.id}
                                     className="flex items-center justify-between gap-4 rounded-lg bg-[#f6f6f8] p-4"
                                 >
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex flex-col gap-1 min-w-0 flex-1">
                                         <span className="font-medium text-[#111827]">{item.name}</span>
+                                        <span className="text-xs text-[#6B7280]">Заказано: {item.quantity} {item.unit}</span>
                                     </div>
-                                    <div className="text-right">
-                                        <span className="text-lg font-bold text-[#111827]">
-                                            {item.quantity}
-                                        </span>
-                                        <span className="text-sm text-[#6B7280] ml-1">{item.unit}</span>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <input
+                                            type="text"
+                                            inputMode="decimal"
+                                            value={receivedQuantities[item.id] ?? ""}
+                                            onChange={(e) => handleReceivedQuantityChange(item.id, e.target.value)}
+                                            placeholder={String(item.quantity ?? "")}
+                                            disabled={isSubmitting}
+                                            className="w-24 rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-right text-base font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
+                                            style={{ fontFamily: "var(--font-onest), -apple-system, sans-serif" }}
+                                        />
+                                        <span className="text-sm text-[#6B7280] w-8">{item.unit}</span>
                                     </div>
                                 </div>
                             ))}
@@ -160,28 +185,10 @@ export default function ForemanAgreement() {
 
                 <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
                     <div className="flex flex-col gap-2">
-                        <label htmlFor="receipt_notes" className="text-sm font-medium text-[#111827]">
-                            Что фактически получено
-                        </label>
-                        <span className="text-xs text-[#6B7280]">
-                            Укажите, какие материалы пришли (если приехало не всё — опишите, что получено). Это увидит вся команда в истории заявки.
-                        </span>
-                        <textarea
-                            id="receipt_notes"
-                            value={receiptNotes}
-                            onChange={(e) => setReceiptNotes(e.target.value)}
-                            placeholder="Например: Цемент 5 т — получено; Песок 10 м³ — частично 6 м³"
-                            rows={4}
-                            className="w-full rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent resize-y min-h-[100px]"
-                            style={{ fontFamily: "var(--font-onest), -apple-system, sans-serif" }}
-                            disabled={isSubmitting}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-2">
                         <span className="text-sm text-[#6B7280]">
                             {isAlreadyConfirmed
-                                ? "Сохраните изменения — отметка о получении обновится в заявке."
-                                : "Подтвердите получение материалов для продолжения обработки заявки."}
+                                ? "Сохраните изменения — количество полученного обновится в заявке."
+                                : "Подтвердите получение материалов. Если по всем позициям получено не меньше заказанного, статус заявки изменится на «Подтверждено прорабом»."}
                         </span>
                     </div>
                     <div className="flex gap-4">

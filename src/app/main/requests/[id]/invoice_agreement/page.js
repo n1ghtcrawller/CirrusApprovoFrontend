@@ -3,7 +3,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
 import CustomButton from "../../../../components/СustomButton";
-import { getRequestWithRelations, updateRequestStatus } from "../../../../lib/api";
+import { getRequestWithRelations, updateRequestStatus, openDocument } from "../../../../lib/api";
 
 export default function InvoiceAgreement() {
     const router = useRouter();
@@ -80,6 +80,20 @@ export default function InvoiceAgreement() {
         return (bytes / (1024 * 1024)).toFixed(1) + " МБ";
     };
 
+    const handleDocumentClick = (e, doc) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const isPdf = doc.file_type?.includes('pdf') || doc.name?.toLowerCase().endsWith('.pdf');
+        if (isPdf) {
+            router.push(`/main/requests/${params.id}/document/${doc.id}`);
+        } else {
+            openDocument(doc.id, doc.name, doc.file_type).catch((err) => {
+                console.error("Ошибка открытия документа:", err);
+                alert("Не удалось открыть документ. Попробуйте позже.");
+            });
+        }
+    };
+
     if (isLoading) {
         return (
             <main className="flex min-h-screen w-full flex-col items-center bg-[#f6f6f8] pt-20 px-6">
@@ -137,7 +151,8 @@ export default function InvoiceAgreement() {
                             {invoiceDocuments.map((doc) => (
                                 <div
                                     key={doc.id}
-                                    className="flex items-center justify-between gap-4 rounded-lg bg-[#f6f6f8] p-4"
+                                    onClick={(e) => handleDocumentClick(e, doc)}
+                                    className="flex items-center justify-between gap-4 rounded-lg bg-[#f6f6f8] p-4 cursor-pointer hover:bg-[#E5E7EB] transition-colors"
                                 >
                                     <div className="flex flex-col gap-1">
                                         <span className="font-medium text-[#111827]">{doc.name}</span>

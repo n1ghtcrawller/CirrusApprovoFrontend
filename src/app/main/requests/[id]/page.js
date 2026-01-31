@@ -281,7 +281,17 @@ export default function RequestDetailPage() {
 
                 {request.items && request.items.length > 0 && (
                     <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
-                        <h2 className="text-xl font-bold text-[#111827]">Позиции</h2>
+                        <div className="flex items-center justify-between gap-3">
+                            <h2 className="text-xl font-bold text-[#111827]">Материалы</h2>
+                            {userRoleInObject === "foreman" && (request.status === "foreman_confirmed_receipt" || request.status === "documents_shipped") && (
+                                <button
+                                    onClick={() => router.push(`/main/requests/${params.id}/foreman_agreement`)}
+                                    className="text-sm font-medium text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                                >
+                                    Редактировать
+                                </button>
+                            )}
+                        </div>
                         <div className="flex flex-col gap-3">
                             {request.items.map((item) => (
                                 <div
@@ -294,11 +304,19 @@ export default function RequestDetailPage() {
                                             Добавлено: {formatDate(item.created_at)}
                                         </span>
                                     </div>
-                                    <div className="text-right">
-                                        <span className="text-lg font-bold text-[#111827]">
-                                            {item.quantity}
+                                    <div className="text-right flex flex-col gap-0.5">
+                                        <span className="text-sm text-[#6B7280]">
+                                            Заказано: <span className="font-semibold text-[#111827]">{item.quantity}</span> {item.unit}
                                         </span>
-                                        <span className="text-sm text-[#6B7280] ml-1">{item.unit}</span>
+                                        <span className="text-sm text-[#6B7280]">
+                                            Получено:{" "}
+                                            {item.received_quantity != null ? (
+                                                <span className="font-semibold text-[#111827]">{item.received_quantity}</span>
+                                            ) : (
+                                                <span className="text-[#9CA3AF]">—</span>
+                                            )}
+                                            {" "}{item.unit}
+                                        </span>
                                     </div>
                                 </div>
                             ))}
@@ -341,37 +359,6 @@ export default function RequestDetailPage() {
                                 </div>
                             ))}
                         </div>
-                    </div>
-                )}
-
-                {(request.receipt_notes || (userRoleInObject === "foreman" && (request.status === "foreman_confirmed_receipt" || request.status === "documents_shipped"))) && (
-                    <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
-                        <div className="flex items-center justify-between gap-3">
-                            <h2 className="text-xl font-bold text-[#111827]">Полученные материалы</h2>
-                            {userRoleInObject === "foreman" && (request.status === "foreman_confirmed_receipt" || request.status === "documents_shipped") && (
-                                <button
-                                    onClick={() => router.push(`/main/requests/${params.id}/foreman_agreement`)}
-                                    className="text-sm font-medium text-[#3B82F6] hover:text-[#2563EB] transition-colors"
-                                >
-                                    Редактировать
-                                </button>
-                            )}
-                        </div>
-                        {request.receipt_notes ? (
-                            <p className="text-base text-[#111827] whitespace-pre-wrap bg-[#f6f6f8] rounded-lg p-4">
-                                {request.receipt_notes}
-                            </p>
-                        ) : (
-                            <p className="text-sm text-[#6B7280]">
-                                Прораб ещё не указал, что получено.{" "}
-                                <button
-                                    onClick={() => router.push(`/main/requests/${params.id}/foreman_agreement`)}
-                                    className="text-[#3B82F6] hover:underline"
-                                >
-                                    Указать полученные материалы
-                                </button>
-                            </p>
-                        )}
                     </div>
                 )}
 
