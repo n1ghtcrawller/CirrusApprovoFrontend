@@ -209,7 +209,9 @@ export default function RequestDetailPage() {
             "Добавить счёт": "add_invoice",
             "Подтвердить счёт": "invoice_agreement",
             "Отметить как оплачено": "accountants_payment",
+            "Отметить оплаченным": "accountants_payment",
             "Подтвердить получение": "foreman_agreement",
+            "Подтвердить получение материалов": "foreman_agreement",
             "Отгрузить документы": "documents_ship",
         };
         return routeMap[action] || null;
