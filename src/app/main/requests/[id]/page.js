@@ -347,13 +347,15 @@ export default function RequestDetailPage() {
                         <h2 className="text-xl font-bold text-[#111827]">История</h2>
                         <div className="flex flex-col gap-4">
                             {request.status_history.map((entry, index) => {
-                                const getUserName = (userId) => {
-                                    // Временный маппинг для демонстрации (в будущем будет из API)
-                                    const userMap = {
-                                        3: "Мария Смирнова",
-                                        5: "Иван Петров",
-                                    };
-                                    return userMap[userId] || `Пользователь #${userId}`;
+                                // Имя из данных пользователя (Telegram: first_name, last_name, username)
+                                const getDisplayName = () => {
+                                    const user = entry.changed_by_user;
+                                    if (user) {
+                                        const name = [user.first_name, user.last_name].filter(Boolean).join(" ").trim();
+                                        if (name) return name;
+                                        if (user.username) return `@${user.username}`;
+                                    }
+                                    return entry.changed_by ? `Пользователь #${entry.changed_by}` : "—";
                                 };
 
                                 return (
@@ -381,7 +383,7 @@ export default function RequestDetailPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2 text-xs text-[#9CA3AF]">
-                                                <span>{getUserName(entry.changed_by)}</span>
+                                                <span>{getDisplayName()}</span>
                                                 <span>•</span>
                                                 <span>{formatDate(entry.created_at)}</span>
                                             </div>
