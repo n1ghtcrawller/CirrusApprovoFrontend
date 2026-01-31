@@ -344,6 +344,37 @@ export default function RequestDetailPage() {
                     </div>
                 )}
 
+                {(request.receipt_notes || (userRoleInObject === "foreman" && (request.status === "foreman_confirmed_receipt" || request.status === "documents_shipped"))) && (
+                    <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
+                        <div className="flex items-center justify-between gap-3">
+                            <h2 className="text-xl font-bold text-[#111827]">Полученные материалы</h2>
+                            {userRoleInObject === "foreman" && (request.status === "foreman_confirmed_receipt" || request.status === "documents_shipped") && (
+                                <button
+                                    onClick={() => router.push(`/main/requests/${params.id}/foreman_agreement`)}
+                                    className="text-sm font-medium text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                                >
+                                    Редактировать
+                                </button>
+                            )}
+                        </div>
+                        {request.receipt_notes ? (
+                            <p className="text-base text-[#111827] whitespace-pre-wrap bg-[#f6f6f8] rounded-lg p-4">
+                                {request.receipt_notes}
+                            </p>
+                        ) : (
+                            <p className="text-sm text-[#6B7280]">
+                                Прораб ещё не указал, что получено.{" "}
+                                <button
+                                    onClick={() => router.push(`/main/requests/${params.id}/foreman_agreement`)}
+                                    className="text-[#3B82F6] hover:underline"
+                                >
+                                    Указать полученные материалы
+                                </button>
+                            </p>
+                        )}
+                    </div>
+                )}
+
                 {request.status_history && request.status_history.length > 0 && (
                     <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
                         <h2 className="text-xl font-bold text-[#111827]">История</h2>
@@ -389,6 +420,11 @@ export default function RequestDetailPage() {
                                                 <span>•</span>
                                                 <span>{formatDate(entry.created_at)}</span>
                                             </div>
+                                            {entry.receipt_notes && (
+                                                <div className="mt-2 text-sm text-[#6B7280] bg-[#f6f6f8] rounded-lg p-3 whitespace-pre-wrap">
+                                                    {entry.receipt_notes}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );

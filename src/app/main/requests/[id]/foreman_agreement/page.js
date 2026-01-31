@@ -3,12 +3,13 @@ import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
 import CustomButton from "../../../../components/СustomButton";
-import { getRequestWithRelations, updateRequestStatus } from "../../../../lib/api";
+import { getRequestWithRelations, updateRequest, updateRequestStatus } from "../../../../lib/api";
 
 export default function ForemanAgreement() {
     const router = useRouter();
     const params = useParams();
     const [request, setRequest] = useState(null);
+    const [receiptNotes, setReceiptNotes] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
@@ -19,6 +20,7 @@ export default function ForemanAgreement() {
             try {
                 const data = await getRequestWithRelations(parseInt(params.id));
                 setRequest(data);
+                setReceiptNotes(data.receipt_notes || "");
             } catch (error) {
                 console.error("Ошибка загрузки заявки:", error);
                 if (error.response?.status === 401) {
@@ -38,12 +40,17 @@ export default function ForemanAgreement() {
         loadRequest();
     }, [params.id]);
 
+    const isAlreadyConfirmed = request?.status === "foreman_confirmed_receipt" || request?.status === "documents_shipped";
+
     const handleConfirmReceipt = async () => {
         setIsSubmitting(true);
         setError(null);
 
         try {
-            await updateRequestStatus(parseInt(params.id), "foreman_confirmed_receipt");
+            await updateRequest(parseInt(params.id), { receipt_notes: receiptNotes.trim() || null });
+            if (!isAlreadyConfirmed) {
+                await updateRequestStatus(parseInt(params.id), "foreman_confirmed_receipt");
+            }
             router.push(`/main/requests/${params.id}`);
         } catch (error) {
             console.error("Ошибка подтверждения получения:", error);
@@ -59,7 +66,7 @@ export default function ForemanAgreement() {
                 setError("Заявка не найдена");
                 return;
             }
-            setError("Ошибка при подтверждении получения. Попробуйте еще раз.");
+            setError("Ошибка при сохранении. Попробуйте еще раз.");
         } finally {
             setIsSubmitting(false);
         }
@@ -151,10 +158,30 @@ export default function ForemanAgreement() {
                     </div>
                 )}
 
-                <div className="flex w-full flex-col gap-3 rounded-xl bg-white p-6">
+                <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="receipt_notes" className="text-sm font-medium text-[#111827]">
+                            Что фактически получено
+                        </label>
+                        <span className="text-xs text-[#6B7280]">
+                            Укажите, какие материалы пришли (если приехало не всё — опишите, что получено). Это увидит вся команда в истории заявки.
+                        </span>
+                        <textarea
+                            id="receipt_notes"
+                            value={receiptNotes}
+                            onChange={(e) => setReceiptNotes(e.target.value)}
+                            placeholder="Например: Цемент 5 т — получено; Песок 10 м³ — частично 6 м³"
+                            rows={4}
+                            className="w-full rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent resize-y min-h-[100px]"
+                            style={{ fontFamily: "var(--font-onest), -apple-system, sans-serif" }}
+                            disabled={isSubmitting}
+                        />
+                    </div>
                     <div className="flex flex-col gap-2">
                         <span className="text-sm text-[#6B7280]">
-                            Подтвердите получение материалов для продолжения обработки заявки.
+                            {isAlreadyConfirmed
+                                ? "Сохраните изменения — отметка о получении обновится в заявке."
+                                : "Подтвердите получение материалов для продолжения обработки заявки."}
                         </span>
                     </div>
                     <div className="flex gap-4">
@@ -175,7 +202,11 @@ export default function ForemanAgreement() {
                             disabled={isSubmitting}
                             fontSize="18px"
                         >
-                            {isSubmitting ? "Подтверждение..." : "Подтвердить получение"}
+                            {isSubmitting
+                                ? (isAlreadyConfirmed ? "Сохранение..." : "Подтверждение...")
+                                : isAlreadyConfirmed
+                                    ? "Сохранить отметку о получении"
+                                    : "Подтвердить получение"}
                         </CustomButton>
                     </div>
                 </div>
