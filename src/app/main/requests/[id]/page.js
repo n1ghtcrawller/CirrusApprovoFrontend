@@ -218,6 +218,7 @@ export default function RequestDetailPage() {
         const routeMap = {
             "Утвердить для снабжения": "approve_for_supply",
             "Утвердить заявку для снабжения": "approve_for_supply",
+            "Утвердить заявку для снабжения или отклонить": "approve_for_supply",
             "Добавить счёт": "add_invoice",
             "Подтвердить счёт": "invoice_agreement",
             "Отметить как оплачено": "accountants_payment",
