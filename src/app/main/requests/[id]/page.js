@@ -1,10 +1,12 @@
 "use client";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { getRequestWithRelations, openDocument, deleteDocument, getCurrentUser, getObjectWithMembers, getObjectMembers } from "../../../lib/api";
 import CustomButton from "../../../components/СustomButton";
 import Comments from "../../../components/Comments";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
+import PencilIcon from "../../../assets/images/pencil.svg";
 
 
 export default function RequestDetailPage() {
@@ -446,9 +448,7 @@ export default function RequestDetailPage() {
                                             </div>
                                         ) : isEdit ? (
                                             <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#FEF3C7] border-2 border-white flex items-center justify-center relative z-10" title="Редактирование">
-                                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M7.5 1.5L10.5 4.5L3.75 11.25H0.75V8.25L7.5 1.5Z" stroke="#D97706" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
+                                                <Image src={PencilIcon} alt="Редактирование" width={12} height={12} className="flex-shrink-0" />
                                             </div>
                                         ) : (
                                             <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#DBEAFE] border-2 border-white flex items-center justify-center relative z-10">
