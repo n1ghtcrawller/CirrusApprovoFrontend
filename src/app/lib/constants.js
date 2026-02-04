@@ -23,18 +23,20 @@ export const ObjectRoleDisplay = {
 // Статусы заявки
 export const RequestStatus = {
   CREATED: 'created',                                    // 1. Создана
-  SUPPLY_ADDED_INVOICE: 'supply_added_invoice',          // 2. Отдел снабжения добавляет счёт
-  DIRECTOR_APPROVED: 'director_approved',                // 3. Директор подтверждает счёт
-  ACCOUNTANT_PAID: 'accountant_paid',                    // 4. Бухгалтер нажимает, что оплачено
-  FOREMAN_CONFIRMED_RECEIPT: 'foreman_confirmed_receipt', // 5. Прораб подтверждает получения списка
-  DOCUMENTS_SHIPPED: 'documents_shipped',                // 6. Отгрузка документов
+  APPROVED_FOR_SUPPLY: 'approved_for_supply',            // 2. Утверждено для снабжения
+  SUPPLY_ADDED_INVOICE: 'supply_added_invoice',          // 3. Отдел снабжения добавил счёт
+  DIRECTOR_APPROVED: 'director_approved',                // 4. Директор/зам подтвердил счёт
+  ACCOUNTANT_PAID: 'accountant_paid',                    // 5. Бухгалтер отметил как оплачено
+  FOREMAN_CONFIRMED_RECEIPT: 'foreman_confirmed_receipt', // 6. Прораб подтвердил получение
+  DOCUMENTS_SHIPPED: 'documents_shipped',                // 7. Отгрузка документов
 };
 
 // Отображаемые названия статусов
 export const RequestStatusDisplay = {
   [RequestStatus.CREATED]: 'Создана',
+  [RequestStatus.APPROVED_FOR_SUPPLY]: 'Утверждено для снабжения',
   [RequestStatus.SUPPLY_ADDED_INVOICE]: 'Отдел снабжения добавил счёт',
-  [RequestStatus.DIRECTOR_APPROVED]: 'Директор подтвердил счёт',
+  [RequestStatus.DIRECTOR_APPROVED]: 'Директор/зам подтвердил счёт',
   [RequestStatus.ACCOUNTANT_PAID]: 'Бухгалтер отметил как оплачено',
   [RequestStatus.FOREMAN_CONFIRMED_RECEIPT]: 'Прораб подтвердил получение материалов',
   [RequestStatus.DOCUMENTS_SHIPPED]: 'Документы отгружены',
@@ -43,6 +45,10 @@ export const RequestStatusDisplay = {
 // Матрица переходов статусов (кто может изменить статус)
 export const StatusTransitionMatrix = {
   [RequestStatus.CREATED]: {
+    nextStatus: RequestStatus.APPROVED_FOR_SUPPLY,
+    allowedRoles: [ObjectRole.DIRECTOR, ObjectRole.DEPUTY_DIRECTOR, ObjectRole.CHIEF_ENGINEER],
+  },
+  [RequestStatus.APPROVED_FOR_SUPPLY]: {
     nextStatus: RequestStatus.SUPPLY_ADDED_INVOICE,
     allowedRoles: [ObjectRole.SUPPLY_SPECIALIST],
   },

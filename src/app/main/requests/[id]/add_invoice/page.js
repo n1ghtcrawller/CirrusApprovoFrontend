@@ -13,6 +13,9 @@ export default function AddInvoice() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState(null);
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [rejectReason, setRejectReason] = useState("");
+    const [isRejecting, setIsRejecting] = useState(false);
 
     useEffect(() => {
         const loadRequest = async () => {
@@ -93,6 +96,40 @@ export default function AddInvoice() {
             setError("Ошибка при добавлении счета. Попробуйте еще раз.");
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleReject = async () => {
+        if (!rejectReason.trim()) {
+            setError("Укажите причину отказа");
+            return;
+        }
+
+        setIsRejecting(true);
+        setError(null);
+
+        try {
+            await updateRequestStatus(parseInt(params.id), "created", {
+                receipt_notes: rejectReason.trim(),
+            });
+            router.push(`/main/requests/${params.id}`);
+        } catch (error) {
+            console.error("Ошибка отказа в обработке:", error);
+            if (error.response?.status === 401) {
+                window.location.href = '/';
+                return;
+            }
+            if (error.response?.status === 403) {
+                setError("Нет доступа к заявке или недостаточно прав");
+                return;
+            }
+            if (error.response?.status === 404) {
+                setError("Заявка не найдена");
+                return;
+            }
+            setError("Ошибка при отказе в обработке. Попробуйте еще раз.");
+        } finally {
+            setIsRejecting(false);
         }
     };
 
@@ -190,7 +227,7 @@ export default function AddInvoice() {
                         <button
                             type="button"
                             onClick={() => router.back()}
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || isRejecting}
                             className="flex-1 rounded-xl bg-white border border-[#E5E7EB] px-5 py-3 text-base font-semibold text-[#6B7280] hover:bg-[#f6f6f8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{
                                 fontFamily: "var(--font-onest), -apple-system, sans-serif",
@@ -200,7 +237,7 @@ export default function AddInvoice() {
                         </button>
                         <button
                             type="submit"
-                            disabled={isSubmitting || !selectedFile}
+                            disabled={isSubmitting || isRejecting || !selectedFile}
                             className="flex-1 rounded-xl bg-[#111827] px-5 py-3 text-base font-semibold text-white hover:bg-[#1F2937] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{
                                 fontFamily: "var(--font-onest), -apple-system, sans-serif",
@@ -211,6 +248,67 @@ export default function AddInvoice() {
                         </button>
                     </div>
                 </form>
+
+                {request.status === "approved_for_supply" && (
+                    <div className="flex w-full flex-col gap-3 rounded-xl bg-white p-6 border-t-2 border-[#E5E7EB]">
+                        <button
+                            type="button"
+                            onClick={() => setShowRejectModal(true)}
+                            disabled={isSubmitting || isRejecting}
+                            className="w-full rounded-xl bg-red-50 border border-red-200 px-5 py-3 text-base font-semibold text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{
+                                fontFamily: "var(--font-onest), -apple-system, sans-serif",
+                            }}
+                        >
+                            Отказать в обработке
+                        </button>
+                    </div>
+                )}
+
+                {showRejectModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-xl p-6 max-w-md w-full flex flex-col gap-4">
+                            <h2 className="text-xl font-bold text-[#111827]">Отказ в обработке</h2>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm font-medium text-[#6B7280]">
+                                    Причина отказа *
+                                </label>
+                                <textarea
+                                    value={rejectReason}
+                                    onChange={(e) => setRejectReason(e.target.value)}
+                                    placeholder="Укажите причину отказа в обработке заявки"
+                                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent min-h-[100px] resize-y"
+                                    style={{
+                                        fontFamily: "var(--font-onest), -apple-system, sans-serif",
+                                    }}
+                                    disabled={isRejecting}
+                                />
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowRejectModal(false);
+                                        setRejectReason("");
+                                        setError(null);
+                                    }}
+                                    disabled={isRejecting}
+                                    className="flex-1 rounded-xl bg-white border border-[#E5E7EB] px-5 py-3 text-base font-semibold text-[#6B7280] hover:bg-[#f6f6f8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Отмена
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleReject}
+                                    disabled={isRejecting || !rejectReason.trim()}
+                                    className="flex-1 rounded-xl bg-red-600 px-5 py-3 text-base font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isRejecting ? "Отправка..." : "Отказать"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </main>
     );

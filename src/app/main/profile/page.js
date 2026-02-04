@@ -354,6 +354,7 @@ export default function Profile() {
                                                     const getStatusColor = (status) => {
                                                         const colorMap = {
                                                             created: "bg-[#E5E7EB]",
+                                                            approved_for_supply: "bg-[#FEF3C7]",
                                                             supply_added_invoice: "bg-[#DBEAFE]",
                                                             director_approved: "bg-[#D1FAE5]",
                                                             accountant_paid: "bg-[#FEF3C7]",

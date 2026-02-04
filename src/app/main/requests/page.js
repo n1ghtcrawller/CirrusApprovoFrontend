@@ -41,9 +41,11 @@ export default function Requests() {
             return;
         }
         
+        const searchLower = value.toLowerCase();
         const filtered = requests.filter(request =>
-            request.number.toLowerCase().includes(value.toLowerCase()) ||
-            request.notes?.toLowerCase().includes(value.toLowerCase())
+            request.number.toLowerCase().includes(searchLower) ||
+            request.notes?.toLowerCase().includes(searchLower) ||
+            request.object_name?.toLowerCase().includes(searchLower)
         );
         setFilteredRequests(filtered);
     };
@@ -53,7 +55,7 @@ export default function Requests() {
         <TelegramBackButton/>
         <div className="flex w-full max-w-2xl flex-col items-start gap-12">
             <h1 className="w-full text-4xl font-bold text-[#111827] leading-[0.9]">
-                Заявки
+                Мои заявки
             </h1>
             <Search placeholder="Поиск заявки" onSearch={handleSearch} />
                 {isLoading ? (

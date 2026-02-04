@@ -5,14 +5,13 @@ import TelegramBackButton from "@/app/components/TelegramBackButton";
 import CustomButton from "../../../../components/СustomButton";
 import { getRequestWithRelations, updateRequestStatus } from "../../../../lib/api";
 
-export default function AccountantsPayment() {
+export default function ApproveForSupply() {
     const router = useRouter();
     const params = useParams();
     const [request, setRequest] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
-    const [totalAmount, setTotalAmount] = useState("");
 
     useEffect(() => {
         const loadRequest = async () => {
@@ -20,10 +19,6 @@ export default function AccountantsPayment() {
             try {
                 const data = await getRequestWithRelations(parseInt(params.id));
                 setRequest(data);
-                // Если уже есть total_amount, показываем его
-                if (data.total_amount != null) {
-                    setTotalAmount(String(data.total_amount));
-                }
             } catch (error) {
                 console.error("Ошибка загрузки заявки:", error);
                 if (error.response?.status === 401) {
@@ -43,32 +38,15 @@ export default function AccountantsPayment() {
         loadRequest();
     }, [params.id]);
 
-    const handleMarkAsPaid = async () => {
+    const handleApprove = async () => {
         setIsSubmitting(true);
         setError(null);
 
-        // Валидация суммы
-        const amountValue = totalAmount.trim();
-        if (!amountValue) {
-            setError("Укажите сумму оплаты");
-            setIsSubmitting(false);
-            return;
-        }
-
-        const parsedAmount = parseFloat(amountValue.replace(",", "."));
-        if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-            setError("Укажите корректную сумму оплаты (больше нуля)");
-            setIsSubmitting(false);
-            return;
-        }
-
         try {
-            await updateRequestStatus(parseInt(params.id), "accountant_paid", {
-                total_amount: parsedAmount,
-            });
+            await updateRequestStatus(parseInt(params.id), "approved_for_supply");
             router.push(`/main/requests/${params.id}`);
         } catch (error) {
-            console.error("Ошибка отметки оплаты:", error);
+            console.error("Ошибка утверждения для снабжения:", error);
             if (error.response?.status === 401) {
                 window.location.href = '/';
                 return;
@@ -81,7 +59,7 @@ export default function AccountantsPayment() {
                 setError("Заявка не найдена");
                 return;
             }
-            setError("Ошибка при отметке оплаты. Попробуйте еще раз.");
+            setError("Ошибка при утверждении заявки. Попробуйте еще раз.");
         } finally {
             setIsSubmitting(false);
         }
@@ -127,7 +105,7 @@ export default function AccountantsPayment() {
             <TelegramBackButton/>
             <div className="flex w-full max-w-2xl flex-col items-start gap-6 min-w-0">
                 <h1 className="text-4xl font-bold text-[#111827] leading-[0.9]">
-                    Оплата бухгалтером
+                    Утверждение для снабжения
                 </h1>
 
                 <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
@@ -143,40 +121,40 @@ export default function AccountantsPayment() {
                     )}
                 </div>
 
+                {request.items && request.items.length > 0 && (
+                    <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
+                        <h2 className="text-xl font-bold text-[#111827]">Материалы</h2>
+                        <div className="flex flex-col gap-3">
+                            {request.items.map((item) => (
+                                <div
+                                    key={item.id}
+                                    className="flex items-center justify-between gap-4 rounded-lg bg-[#f6f6f8] p-4"
+                                >
+                                    <div className="flex flex-col gap-1">
+                                        <span className="font-medium text-[#111827]">{item.name}</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-lg font-bold text-[#111827]">
+                                            {item.quantity}
+                                        </span>
+                                        <span className="text-sm text-[#6B7280] ml-1">{item.unit}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {error && (
                     <div className="w-full rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
                         {error}
                     </div>
                 )}
 
-                <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
-                    <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-[#6B7280]">
-                            Сумма оплаты *
-                        </label>
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="text"
-                                inputMode="decimal"
-                                value={totalAmount}
-                                onChange={(e) => setTotalAmount(e.target.value)}
-                                placeholder="0.00"
-                                disabled={isSubmitting}
-                                className="flex-1 rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-base font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
-                                style={{ fontFamily: "var(--font-onest), -apple-system, sans-serif" }}
-                            />
-                            <span className="text-sm text-[#6B7280]">₽</span>
-                        </div>
-                        <span className="text-xs text-[#9CA3AF]">
-                            Укажите сумму, на которую был выполнен платеж
-                        </span>
-                    </div>
-                </div>
-
                 <div className="flex w-full flex-col gap-3 rounded-xl bg-white p-6">
                     <div className="flex flex-col gap-2">
                         <span className="text-sm text-[#6B7280]">
-                            Отметьте заявку как оплаченную после выполнения платежа.
+                            Утвердите заявку для передачи в отдел снабжения. После утверждения отдел снабжения сможет добавить счёт.
                         </span>
                     </div>
                     <div className="flex gap-4">
@@ -193,10 +171,10 @@ export default function AccountantsPayment() {
                         </button>
                         <CustomButton
                             width="100%"
-                            onClick={handleMarkAsPaid}
+                            onClick={handleApprove}
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? "Отметка..." : "Оплачено"}
+                            {isSubmitting ? "Утверждение..." : "Утвердить"}
                         </CustomButton>
                     </div>
                 </div>

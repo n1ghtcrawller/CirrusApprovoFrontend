@@ -107,7 +107,8 @@ export const searchUsers = async (query, limit = null) => {
  * @param {Object} objectData - Данные объекта
  * @param {string} objectData.name - Название объекта
  * @param {string} objectData.description - Описание объекта
- * @returns {Promise<Object>}
+ * @param {number} objectData.planned_budget - Планируемый бюджет (опционально)
+ * @returns {Promise<Object>} - Объект с полями planned_budget и actual_spent
  */
 export const createObject = async (objectData) => {
   const response = await apiClient.post('/objects', objectData);
@@ -116,7 +117,7 @@ export const createObject = async (objectData) => {
 
 /**
  * Получение всех объектов текущего пользователя
- * @returns {Promise<Array>}
+ * @returns {Promise<Array>} - Массив объектов, каждый содержит planned_budget и actual_spent
  */
 export const getObjects = async () => {
   const response = await apiClient.get('/objects');
@@ -125,7 +126,7 @@ export const getObjects = async () => {
 
 /**
  * Получение всех объектов, где пользователь является владельцем
- * @returns {Promise<Array>}
+ * @returns {Promise<Array>} - Массив объектов, каждый содержит planned_budget и actual_spent
  */
 export const getOwnedObjects = async () => {
   const response = await apiClient.get('/objects/owned');
@@ -135,7 +136,7 @@ export const getOwnedObjects = async () => {
 /**
  * Получение объекта по ID
  * @param {number} objectId - ID объекта
- * @returns {Promise<Object>}
+ * @returns {Promise<Object>} - Объект с полями planned_budget и actual_spent
  */
 export const getObject = async (objectId) => {
   const response = await apiClient.get(`/objects/${objectId}`);
@@ -145,7 +146,7 @@ export const getObject = async (objectId) => {
 /**
  * Получение объекта со всеми пользователями и их ролями
  * @param {number} objectId - ID объекта
- * @returns {Promise<Object>}
+ * @returns {Promise<Object>} - Объект с полями planned_budget и actual_spent, а также участниками
  */
 export const getObjectWithMembers = async (objectId) => {
   const response = await apiClient.get(`/objects/${objectId}/with-members`);
@@ -155,8 +156,8 @@ export const getObjectWithMembers = async (objectId) => {
 /**
  * Обновление объекта
  * @param {number} objectId - ID объекта
- * @param {Object} objectData - Данные для обновления
- * @returns {Promise<Object>}
+ * @param {Object} objectData - Данные для обновления (в т.ч. planned_budget)
+ * @returns {Promise<Object>} - Обновленный объект с полями planned_budget и actual_spent
  */
 export const updateObject = async (objectId, objectData) => {
   const response = await apiClient.put(`/objects/${objectId}`, objectData);
@@ -239,8 +240,12 @@ export const createRequest = async (requestData) => {
 };
 
 /**
- * Получение всех заявок, созданных текущим пользователем
- * @returns {Promise<Array>}
+ * Получение заявок, требующих действия текущего пользователя (Мои заявки)
+ * Возвращает только те заявки по объектам, где пользователь является участником
+ * и по текущему статусу заявки пользователю доступно действие (утвердить, добавить счёт, подтвердить получение и т.п.).
+ * Логика: по каждой заявке проверяется доступ пользователя к объекту и роль;
+ * если для текущего статуса у роли пользователя есть разрешённый переход, заявка попадает в список.
+ * @returns {Promise<Array>} - Массив заявок, каждая содержит object_name (название объекта)
  */
 export const getRequests = async () => {
   const response = await apiClient.get('/requests');
@@ -279,8 +284,14 @@ export const getRequestWithRelations = async (requestId) => {
 
 /**
  * Обновление заявки
+ * Редактировать заявку и позиции могут создатель заявки, а также директор/заместитель директора/главный инженер
+ * (в рамках своих прав, в статусах CREATED и APPROVED_FOR_SUPPLY).
  * @param {number} requestId - ID заявки
  * @param {Object} requestData - Данные для обновления
+ * @param {string} requestData.number - Номер заявки
+ * @param {string} requestData.delivery_date - Дата доставки (YYYY-MM-DD)
+ * @param {string} requestData.notes - Примечания (опционально)
+ * @param {Array} requestData.items - Массив позиций (каждая позиция: {id?: number, name: string, unit: string, quantity: number})
  * @returns {Promise<Object>}
  */
 export const updateRequest = async (requestId, requestData) => {
@@ -301,22 +312,28 @@ export const deleteRequest = async (requestId) => {
  * Обновление статуса заявки
  * @param {number} requestId - ID заявки
  * @param {string} status - Новый статус
+ * @param {Object} additionalData - Дополнительные данные (например, total_amount для accountant_paid, receipt_notes для отказа)
+ * @param {number} additionalData.total_amount - Сумма оплаты (для accountant_paid)
+ * @param {string} additionalData.receipt_notes - Причина отказа (для отказов в согласовании)
  * @returns {Promise<Object>}
  */
-export const updateRequestStatus = async (requestId, status) => {
+export const updateRequestStatus = async (requestId, status, additionalData = {}) => {
   const response = await apiClient.put(`/requests/${requestId}/status`, {
     status: status,
+    ...additionalData,
   });
   return response.data;
 };
 
 /**
- * Подтверждение получения материалов прорабом (с указанием фактически полученных количеств).
+ * Подтверждение получения материалов прорабом (с указанием количества, полученного в этот раз).
+ * received_quantity в запросе — это delta (получено в этот раз), а не общее количество.
+ * Бэкенд суммирует: new_received = current_received + delta.
  * Если по всем позициям получено не меньше заказанного — статус заявки переводится в foreman_confirmed_receipt.
  * Если не всё получено — статус остаётся прежним (подтверждение прорабом).
  * @param {number} requestId - ID заявки
- * @param {Array<{ item_id: number, received_quantity: number }>} items - Массив { item_id, received_quantity }
- * @returns {Promise<Object>} - Обновлённая заявка (в т.ч. status, items с received_quantity)
+ * @param {Array<{ item_id: number, received_quantity: number }>} items - Массив { item_id, received_quantity }, где received_quantity — это delta (получено в этот раз)
+ * @returns {Promise<Object>} - Обновлённая заявка (в т.ч. status, items с received_quantity — суммарным количеством)
  */
 export const updateForemanReceipt = async (requestId, items) => {
   const response = await apiClient.put(`/requests/${requestId}/foreman-receipt`, { items });
@@ -444,7 +461,7 @@ export const deleteDocument = async (documentId) => {
  * Создание комментария к заявке
  * @param {number} requestId - ID заявки
  * @param {string} text - Текст комментария
- * @returns {Promise<Object>}
+ * @returns {Promise<Object>} - Комментарий с полем author_name (имя автора для отображения)
  */
 export const createComment = async (requestId, text) => {
   const response = await apiClient.post(`/requests/${requestId}/comments`, {
@@ -456,7 +473,7 @@ export const createComment = async (requestId, text) => {
 /**
  * Получение всех комментариев заявки
  * @param {number} requestId - ID заявки
- * @returns {Promise<Array>}
+ * @returns {Promise<Array>} - Массив комментариев, каждый содержит author_name (имя автора для отображения)
  */
 export const getRequestComments = async (requestId) => {
   const response = await apiClient.get(`/requests/${requestId}/comments`);
@@ -466,7 +483,7 @@ export const getRequestComments = async (requestId) => {
 /**
  * Получение комментария по ID
  * @param {number} commentId - ID комментария
- * @returns {Promise<Object>}
+ * @returns {Promise<Object>} - Комментарий с полем author_name (имя автора для отображения)
  */
 export const getComment = async (commentId) => {
   const response = await apiClient.get(`/comments/${commentId}`);
@@ -477,7 +494,7 @@ export const getComment = async (commentId) => {
  * Обновление комментария
  * @param {number} commentId - ID комментария
  * @param {string} text - Новый текст комментария
- * @returns {Promise<Object>}
+ * @returns {Promise<Object>} - Обновленный комментарий с полем author_name (имя автора для отображения)
  */
 export const updateComment = async (commentId, text) => {
   const response = await apiClient.put(`/comments/${commentId}`, {

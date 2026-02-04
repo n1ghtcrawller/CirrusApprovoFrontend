@@ -18,6 +18,11 @@ export default function ProjectList({ projects = [], onItemClick }) {
     );
   }
 
+  const formatBudget = (amount) => {
+    if (amount == null) return "—";
+    return amount.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
   return (
     <div className="flex w-full flex-col gap-3">
       {projects.map((project) => (
@@ -37,6 +42,20 @@ export default function ProjectList({ projects = [], onItemClick }) {
           </div>
           {project.description && (
             <p className="text-sm text-[#6B7280] line-clamp-2">{project.description}</p>
+          )}
+          {(project.planned_budget != null || project.actual_spent != null) && (
+            <div className="flex items-center gap-4 text-xs text-[#6B7280] pt-2 border-t border-[#E5E7EB]">
+              {project.planned_budget != null && (
+                <span>
+                  План: <span className="font-medium text-[#111827]">{formatBudget(project.planned_budget)} ₽</span>
+                </span>
+              )}
+              {project.actual_spent != null && (
+                <span>
+                  Потрачено: <span className="font-medium text-[#111827]">{formatBudget(project.actual_spent)} ₽</span>
+                </span>
+              )}
+            </div>
           )}
         </div>
       ))}

@@ -96,6 +96,7 @@ export default function RequestDetailPage() {
     const getStatusLabel = (status) => {
         const statusMap = {
             created: "Создана",
+            approved_for_supply: "Утверждено для снабжения",
             supply_added_invoice: "Добавлен счет",
             director_approved: "Одобрена директором",
             accountant_paid: "Оплачена бухгалтером",
@@ -108,6 +109,7 @@ export default function RequestDetailPage() {
     const getStatusColor = (status) => {
         const colorMap = {
             created: "bg-[#E5E7EB] text-[#6B7280]",
+            approved_for_supply: "bg-[#FEF3C7] text-[#92400E]",
             supply_added_invoice: "bg-[#DBEAFE] text-[#1E40AF]",
             director_approved: "bg-[#D1FAE5] text-[#065F46]",
             accountant_paid: "bg-[#FEF3C7] text-[#92400E]",
@@ -169,12 +171,18 @@ export default function RequestDetailPage() {
             supply_specialist: "Специалист отдела снабжения",
             director: "Директор",
             deputy_director: "Заместитель директора",
+            chief_engineer: "Главный инженер",
             accountant: "Бухгалтер",
             foreman: "Прораб",
         };
 
         const statusActionMap = {
             created: {
+                role: ["director", "deputy_director", "chief_engineer"],
+                role_display: "Директор / Заместитель директора / Главный инженер",
+                action: "Утвердить для снабжения",
+            },
+            approved_for_supply: {
                 role: "supply_specialist",
                 role_display: roleDisplayMap.supply_specialist,
                 action: "Добавить счёт",
@@ -206,6 +214,7 @@ export default function RequestDetailPage() {
 
     const getActionRoute = (action) => {
         const routeMap = {
+            "Утвердить для снабжения": "approve_for_supply",
             "Добавить счёт": "add_invoice",
             "Подтвердить счёт": "invoice_agreement",
             "Отметить как оплачено": "accountants_payment",
@@ -248,7 +257,18 @@ export default function RequestDetailPage() {
             <div className="flex w-full max-w-2xl flex-col items-start gap-6">
                 <div className="flex w-full flex-col gap-6 rounded-xl bg-white p-6">
                     <div className="flex flex-col gap-2">
-                        <h1 className="text-3xl font-bold text-[#111827]">{request.number}</h1>
+                        <div className="flex items-start justify-between gap-3">
+                            <h1 className="text-3xl font-bold text-[#111827]">{request.number}</h1>
+                            {(userRoleInObject === "director" || userRoleInObject === "deputy_director" || userRoleInObject === "chief_engineer") && 
+                             (request.status === "created" || request.status === "approved_for_supply") && (
+                                <button
+                                    onClick={() => router.push(`/main/requests/${params.id}/edit`)}
+                                    className="text-sm font-medium text-[#3B82F6] hover:text-[#2563EB] transition-colors whitespace-nowrap"
+                                >
+                                    Редактировать
+                                </button>
+                            )}
+                        </div>
                         <span
                             className={`rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap w-fit ${getStatusColor(
                                 request.status
@@ -266,6 +286,12 @@ export default function RequestDetailPage() {
                             <span className="font-medium text-[#6B7280]">Дата доставки:</span>
                             <span className="text-[#111827]">{formatShortDate(request.delivery_date)}</span>
                         </div>
+                        {request.total_amount != null && (
+                            <div className="flex items-center gap-2 text-sm">
+                                <span className="font-medium text-[#6B7280]">Сумма оплаты:</span>
+                                <span className="text-[#111827] font-semibold">{request.total_amount.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽</span>
+                            </div>
+                        )}
                         {request.notes && (
                             <div className="flex items-start gap-2 text-sm">
                                 <span className="font-medium text-[#6B7280]">Примечания:</span>
@@ -317,6 +343,11 @@ export default function RequestDetailPage() {
                                             )}
                                             {" "}{item.unit}
                                         </span>
+                                        {item.received_quantity != null && (
+                                            <span className="text-sm text-[#6B7280]">
+                                                Остаток: <span className="font-semibold text-[#111827]">{Math.max(0, (item.quantity ?? 0) - item.received_quantity)}</span> {item.unit}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -431,12 +462,15 @@ export default function RequestDetailPage() {
 
                     // Определяем, может ли текущий пользователь выполнить действие
                     // Если role === null, то действие может выполнить любой участник объекта
+                    // Если role - массив, проверяем, входит ли роль пользователя в массив
                     // Для "Подтвердить счёт" (role === "director") могут и директор, и заместитель директора
                     const canPerformAction = pendingAction.role === null 
                         ? userRoleInObject !== null // Любой участник объекта может выполнить
-                        : pendingAction.role === "director"
-                            ? (userRoleInObject === "director" || userRoleInObject === "deputy_director")
-                            : userRoleInObject === pendingAction.role;
+                        : Array.isArray(pendingAction.role)
+                            ? pendingAction.role.includes(userRoleInObject) // Роль должна быть в массиве
+                            : pendingAction.role === "director"
+                                ? (userRoleInObject === "director" || userRoleInObject === "deputy_director")
+                                : userRoleInObject === pendingAction.role;
 
                     return (
                         <div className="flex w-full flex-col gap-3 rounded-xl bg-white p-6">

@@ -21,6 +21,7 @@ export default function RequestListItem({ request, onClick }) {
   const getStatusLabel = (status) => {
     const statusMap = {
       created: "Создана",
+      approved_for_supply: "Утверждено для снабжения",
       supply_added_invoice: "Добавлен счет",
       director_approved: "Одобрена директором",
       accountant_paid: "Оплачена бухгалтером",
@@ -33,6 +34,7 @@ export default function RequestListItem({ request, onClick }) {
   const getStatusColor = (status) => {
     const colorMap = {
       created: "bg-[#E5E7EB] text-[#6B7280]",
+      approved_for_supply: "bg-[#FEF3C7] text-[#92400E]",
       supply_added_invoice: "bg-[#DBEAFE] text-[#1E40AF]",
       director_approved: "bg-[#D1FAE5] text-[#065F46]",
       accountant_paid: "bg-[#FEF3C7] text-[#92400E]",
@@ -53,6 +55,11 @@ export default function RequestListItem({ request, onClick }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h3 className="text-lg font-bold text-[#111827]">{request.number}</h3>
+          {request.object_name && (
+            <span className="text-xs text-[#6B7280] font-medium">
+              {request.object_name}
+            </span>
+          )}
           <span className="text-xs text-[#9CA3AF]">
             Создана: {formatDate(request.created_at)}
           </span>

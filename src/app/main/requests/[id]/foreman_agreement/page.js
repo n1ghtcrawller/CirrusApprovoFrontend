@@ -20,11 +20,11 @@ export default function ForemanAgreement() {
             try {
                 const data = await getRequestWithRelations(parseInt(params.id));
                 setRequest(data);
+                // Инициализируем пустыми значениями - пользователь будет вводить "получено в этот раз"
                 const initial = {};
                 if (data.items && data.items.length) {
                     data.items.forEach((item) => {
-                        const val = item.received_quantity != null ? item.received_quantity : item.quantity;
-                        initial[item.id] = String(val ?? "");
+                        initial[item.id] = ""; // Пустое поле для ввода "получено в этот раз"
                     });
                 }
                 setReceivedQuantities(initial);
@@ -58,10 +58,18 @@ export default function ForemanAgreement() {
         setError(null);
 
         try {
+            // Формируем массив с delta (получено в этот раз)
             const items = (request.items || []).map((item) => {
                 const raw = receivedQuantities[item.id];
-                const num = raw !== "" && raw !== undefined ? parseFloat(String(raw).replace(",", ".")) : item.quantity;
-                return { item_id: item.id, received_quantity: Number.isFinite(num) ? num : item.quantity };
+                // Парсим введенное значение (получено в этот раз)
+                const num = raw !== "" && raw !== undefined && raw !== null 
+                    ? parseFloat(String(raw).replace(",", ".")) 
+                    : 0;
+                // Передаем delta (получено в этот раз), бэкенд сам суммирует с текущим received_quantity
+                return { 
+                    item_id: item.id, 
+                    received_quantity: Number.isFinite(num) && num >= 0 ? num : 0 
+                };
             });
             const updated = await updateForemanReceipt(parseInt(params.id), items);
             setRequest(updated);
@@ -146,33 +154,48 @@ export default function ForemanAgreement() {
                     <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
                         <h2 className="text-xl font-bold text-[#111827]">Материалы</h2>
                         <p className="text-sm text-[#6B7280]">
-                            Укажите фактически полученное количество по каждой позиции. Если получили не всё — введите меньше; статус заявки останется «Подтверждение прорабом» до полного получения.
+                            Укажите количество, полученное в этот раз. Бэкенд автоматически суммирует с уже полученным. Если по всем позициям получено не меньше заказанного, статус заявки изменится на «Подтверждено прорабом».
                         </p>
                         <div className="flex flex-col gap-3">
-                            {request.items.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="flex items-center justify-between gap-4 rounded-lg bg-[#f6f6f8] p-4"
-                                >
-                                    <div className="flex flex-col gap-1 min-w-0 flex-1">
-                                        <span className="font-medium text-[#111827]">{item.name}</span>
-                                        <span className="text-xs text-[#6B7280]">Заказано: {item.quantity} {item.unit}</span>
+                            {request.items.map((item) => {
+                                const currentReceived = item.received_quantity ?? 0;
+                                const ordered = item.quantity ?? 0;
+                                const remaining = Math.max(0, ordered - currentReceived);
+                                
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className="flex flex-col gap-3 rounded-lg bg-[#f6f6f8] p-4"
+                                    >
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="flex flex-col gap-1 min-w-0 flex-1">
+                                                <span className="font-medium text-[#111827]">{item.name}</span>
+                                                <div className="flex flex-col gap-0.5 text-xs text-[#6B7280]">
+                                                    <span>Заказано: <span className="font-semibold text-[#111827]">{ordered}</span> {item.unit}</span>
+                                                    <span>Получено всего: <span className="font-semibold text-[#111827]">{currentReceived}</span> {item.unit}</span>
+                                                    <span>Остаток: <span className="font-semibold text-[#111827]">{remaining}</span> {item.unit}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-1 shrink-0">
+                                                <label className="text-xs text-[#6B7280]">Получено в этот раз:</label>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="text"
+                                                        inputMode="decimal"
+                                                        value={receivedQuantities[item.id] ?? ""}
+                                                        onChange={(e) => handleReceivedQuantityChange(item.id, e.target.value)}
+                                                        placeholder="0"
+                                                        disabled={isSubmitting}
+                                                        className="w-24 rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-right text-base font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
+                                                        style={{ fontFamily: "var(--font-onest), -apple-system, sans-serif" }}
+                                                    />
+                                                    <span className="text-sm text-[#6B7280] w-8">{item.unit}</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                        <input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={receivedQuantities[item.id] ?? ""}
-                                            onChange={(e) => handleReceivedQuantityChange(item.id, e.target.value)}
-                                            placeholder={String(item.quantity ?? "")}
-                                            disabled={isSubmitting}
-                                            className="w-24 rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-right text-base font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
-                                            style={{ fontFamily: "var(--font-onest), -apple-system, sans-serif" }}
-                                        />
-                                        <span className="text-sm text-[#6B7280] w-8">{item.unit}</span>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}

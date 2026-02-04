@@ -128,6 +128,38 @@ export default function ProjectDetailsPage() {
                     </p>
                 )}
 
+                {(project.planned_budget != null || project.actual_spent != null) && (
+                    <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
+                        <h2 className="text-xl font-bold text-[#111827]">Бюджет</h2>
+                        <div className="flex flex-col gap-3">
+                            {project.planned_budget != null && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-[#6B7280]">Планируемый бюджет:</span>
+                                    <span className="text-lg font-bold text-[#111827]">
+                                        {project.planned_budget.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽
+                                    </span>
+                                </div>
+                            )}
+                            {project.actual_spent != null && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-[#6B7280]">Фактически потрачено:</span>
+                                    <span className="text-lg font-bold text-[#111827]">
+                                        {project.actual_spent.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽
+                                    </span>
+                                </div>
+                            )}
+                            {project.planned_budget != null && project.actual_spent != null && (
+                                <div className="flex items-center justify-between pt-2 border-t border-[#E5E7EB]">
+                                    <span className="text-sm font-medium text-[#6B7280]">Остаток:</span>
+                                    <span className={`text-lg font-bold ${(project.planned_budget - project.actual_spent) >= 0 ? 'text-[#065F46]' : 'text-[#DC2626]'}`}>
+                                        {(project.planned_budget - project.actual_spent).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 <div className="flex w-full flex-col gap-6">
                     <button
                         onClick={() => router.push(`/main/projects/${params.id}/team`)}

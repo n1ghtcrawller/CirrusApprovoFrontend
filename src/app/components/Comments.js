@@ -189,6 +189,11 @@ export default function Comments({ requestId }) {
                                 <>
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex-1">
+                                            {comment.author_name && (
+                                                <div className="text-xs font-medium text-[#6B7280] mb-1">
+                                                    {comment.author_name}
+                                                </div>
+                                            )}
                                             <p className="text-sm text-[#111827] whitespace-pre-wrap">
                                                 {comment.text}
                                             </p>
