@@ -365,6 +365,33 @@ export const uploadDocument = async (requestId, file, documentType = null) => {
 };
 
 /**
+ * Массовая загрузка документов для заявки
+ * Доступ только у специалиста отдела снабжения (SUPPLY_SPECIALIST) в объекте заявки.
+ * Заявка должна быть в статусе «Утверждено для снабжения» (APPROVED_FOR_SUPPLY).
+ * Не более 20 файлов в одном запросе.
+ * @param {number} requestId - ID заявки
+ * @param {File[]} files - Массив файлов документов
+ * @param {string} documentType - Тип документа (опционально, по умолчанию "invoice")
+ * @returns {Promise<Array>} - Список созданных документов
+ */
+export const uploadDocumentsBatch = async (requestId, files, documentType = "invoice") => {
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append('files', file);
+  });
+  if (documentType) {
+    formData.append('document_type', documentType);
+  }
+  
+  const response = await apiClient.post(`/requests/${requestId}/documents/batch`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+/**
  * Получение всех документов заявки
  * @param {number} requestId - ID заявки
  * @returns {Promise<Array>}

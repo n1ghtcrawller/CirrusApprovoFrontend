@@ -3,7 +3,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
 import CustomButton from "../../../../components/СustomButton";
-import { getRequestWithRelations, uploadDocument, updateRequestStatus } from "../../../../lib/api";
+import { getRequestWithRelations, uploadDocument, uploadDocumentsBatch, updateRequestStatus } from "../../../../lib/api";
 
 export default function AddInvoice() {
     const router = useRouter();
@@ -11,7 +11,7 @@ export default function AddInvoice() {
     const [request, setRequest] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [selectedFile, setSelectedFile] = useState(null);
+    const [selectedFiles, setSelectedFiles] = useState([]);
     const [error, setError] = useState(null);
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
@@ -43,16 +43,27 @@ export default function AddInvoice() {
     }, [params.id]);
 
     const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            // Проверка размера файла (макс 10 МБ)
-            if (file.size > 10 * 1024 * 1024) {
-                setError("Размер файла не должен превышать 10 МБ");
-                return;
-            }
-            setSelectedFile(file);
-            setError(null);
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) {
+            setSelectedFiles([]);
+            return;
         }
+
+        // Проверка количества файлов (макс 20)
+        if (files.length > 20) {
+            setError("Можно загрузить не более 20 файлов за раз");
+            return;
+        }
+
+        // Проверка размера каждого файла (макс 10 МБ)
+        const invalidFiles = files.filter(file => file.size > 10 * 1024 * 1024);
+        if (invalidFiles.length > 0) {
+            setError(`Размер файла "${invalidFiles[0].name}" превышает 10 МБ`);
+            return;
+        }
+
+        setSelectedFiles(files);
+        setError(null);
     };
 
     const handleSubmit = async (e) => {
@@ -61,14 +72,18 @@ export default function AddInvoice() {
         setError(null);
 
         try {
-            if (!selectedFile) {
-                setError("Выберите файл счета");
+            if (selectedFiles.length === 0) {
+                setError("Выберите хотя бы один файл счета");
                 setIsSubmitting(false);
                 return;
             }
 
-            // Загружаем документ типа invoice
-            await uploadDocument(parseInt(params.id), selectedFile, "invoice");
+            // Если один файл - используем обычный endpoint, если несколько - batch endpoint
+            if (selectedFiles.length === 1) {
+                await uploadDocument(parseInt(params.id), selectedFiles[0], "invoice");
+            } else {
+                await uploadDocumentsBatch(parseInt(params.id), selectedFiles, "invoice");
+            }
             
             // Обновляем статус заявки на supply_added_invoice
             await updateRequestStatus(parseInt(params.id), "supply_added_invoice");
@@ -82,18 +97,19 @@ export default function AddInvoice() {
                 return;
             }
             if (error.response?.status === 400) {
-                setError("Ошибка валидации данных. Проверьте правильность файла.");
+                const errorMessage = error.response?.data?.detail || error.response?.data?.message;
+                setError(errorMessage || "Ошибка валидации данных. Проверьте правильность файлов.");
                 return;
             }
             if (error.response?.status === 403) {
-                setError("Нет доступа к заявке");
+                setError("Нет доступа к заявке или недостаточно прав");
                 return;
             }
             if (error.response?.status === 404) {
                 setError("Заявка не найдена");
                 return;
             }
-            setError("Ошибка при добавлении счета. Попробуйте еще раз.");
+            setError("Ошибка при добавлении счетов. Попробуйте еще раз.");
         } finally {
             setIsSubmitting(false);
         }
@@ -199,12 +215,13 @@ export default function AddInvoice() {
                     <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-medium text-[#6B7280]">
-                                Файл счета *
+                                Файл(ы) счета *
                             </label>
                             <input
                                 type="file"
                                 onChange={handleFileChange}
                                 accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                multiple
                                 className="w-full rounded-xl bg-white border border-[#E5E7EB] px-4 py-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
                                 style={{
                                     fontFamily: "var(--font-onest), -apple-system, sans-serif",
@@ -212,13 +229,22 @@ export default function AddInvoice() {
                                 disabled={isSubmitting}
                                 required
                             />
-                            {selectedFile && (
-                                <span className="text-sm text-[#6B7280]">
-                                    Выбран файл: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} КБ)
-                                </span>
+                            {selectedFiles.length > 0 && (
+                                <div className="flex flex-col gap-2 mt-2">
+                                    <span className="text-sm font-medium text-[#6B7280]">
+                                        Выбрано файлов: {selectedFiles.length}
+                                    </span>
+                                    <div className="flex flex-col gap-1 max-h-32 overflow-y-auto">
+                                        {selectedFiles.map((file, index) => (
+                                            <span key={index} className="text-xs text-[#6B7280]">
+                                                • {file.name} ({(file.size / 1024).toFixed(1)} КБ)
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
                             )}
                             <span className="text-xs text-[#9CA3AF]">
-                                Поддерживаемые форматы: PDF, JPG, PNG, DOC, DOCX. Максимальный размер: 10 МБ
+                                Поддерживаемые форматы: PDF, JPG, PNG, DOC, DOCX. Максимальный размер файла: 10 МБ. Можно загрузить до 20 файлов за раз.
                             </span>
                         </div>
                     </div>
@@ -237,14 +263,16 @@ export default function AddInvoice() {
                         </button>
                         <button
                             type="submit"
-                            disabled={isSubmitting || isRejecting || !selectedFile}
+                            disabled={isSubmitting || isRejecting || selectedFiles.length === 0}
                             className="flex-1 rounded-xl bg-[#111827] px-5 py-3 text-base font-semibold text-white hover:bg-[#1F2937] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{
                                 fontFamily: "var(--font-onest), -apple-system, sans-serif",
                                 height: "50px",
                             }}
                         >
-                            {isSubmitting ? "Добавление..." : "Добавить счет"}
+                            {isSubmitting 
+                                ? (selectedFiles.length === 1 ? "Добавление..." : "Загрузка счетов...") 
+                                : (selectedFiles.length === 1 ? "Добавить счет" : `Добавить ${selectedFiles.length} счетов`)}
                         </button>
                     </div>
                 </form>

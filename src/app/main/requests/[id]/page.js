@@ -360,36 +360,44 @@ export default function RequestDetailPage() {
                     <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
                         <h2 className="text-xl font-bold text-[#111827]">Документы</h2>
                         <div className="flex flex-col gap-3">
-                            {request.documents.map((doc) => (
-                                <div
-                                    key={doc.id}
-                                    className="flex items-center justify-between gap-4 rounded-lg bg-[#f6f6f8] p-4 hover:bg-[#E5E7EB] transition-colors"
-                                >
+                            {request.documents.map((doc) => {
+                                const getDocumentTypeLabel = (type) => {
+                                    if (type === "invoice") return "Счёт";
+                                    if (type === "shipment") return "Отгрузка";
+                                    return type;
+                                };
+                                
+                                return (
                                     <div
-                                        onClick={(e) => handleDocumentClick(e, doc)}
-                                        className="flex items-center justify-between gap-4 flex-1 cursor-pointer"
+                                        key={doc.id}
+                                        className="flex items-center justify-between gap-2 rounded-lg bg-[#f6f6f8] p-4 hover:bg-[#E5E7EB] transition-colors"
                                     >
-                                        <div className="flex flex-col gap-1">
-                                            <span className="font-medium text-[#111827]">{doc.name}</span>
-                                            <span className="text-xs text-[#9CA3AF]">
-                                                {formatFileSize(doc.file_size)} • {formatDate(doc.created_at)}
+                                        <div
+                                            onClick={(e) => handleDocumentClick(e, doc)}
+                                            className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
+                                        >
+                                            <div className="flex flex-col gap-1 min-w-0 flex-1">
+                                                <span className="font-medium text-[#111827] truncate">{doc.name}</span>
+                                                <span className="text-xs text-[#9CA3AF]">
+                                                    {formatFileSize(doc.file_size)} • {formatDate(doc.created_at)}
+                                                </span>
+                                            </div>
+                                            <span className="text-xs text-[#6B7280] bg-white px-2 py-1 rounded flex-shrink-0">
+                                                {getDocumentTypeLabel(doc.document_type)}
                                             </span>
                                         </div>
-                                        <span className="text-xs text-[#6B7280] bg-white px-2 py-1 rounded">
-                                            {doc.document_type}
-                                        </span>
+                                        <button
+                                            onClick={(e) => handleDeleteDocument(e, doc)}
+                                            className="ml-2 p-2 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                                            title="Удалить документ"
+                                        >
+                                            <svg width="16" height="16" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M7.66683 4V10.6667H2.3335V4H7.66683ZM6.66683 0H3.3335L2.66683 0.666667H0.333496V2H9.66683V0.666667H7.3335L6.66683 0ZM9.00016 2.66667H1.00016V10.6667C1.00016 11.4 1.60016 12 2.3335 12H7.66683C8.40016 12 9.00016 11.4 9.00016 10.6667V2.66667Z" fill="#EF4444"/>
+                                            </svg>
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={(e) => handleDeleteDocument(e, doc)}
-                                        className="ml-2 p-2 hover:bg-red-50 rounded-lg transition-colors"
-                                        title="Удалить документ"
-                                    >
-                                        <svg width="16" height="16" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M7.66683 4V10.6667H2.3335V4H7.66683ZM6.66683 0H3.3335L2.66683 0.666667H0.333496V2H9.66683V0.666667H7.3335L6.66683 0ZM9.00016 2.66667H1.00016V10.6667C1.00016 11.4 1.60016 12 2.3335 12H7.66683C8.40016 12 9.00016 11.4 9.00016 10.6667V2.66667Z" fill="#EF4444"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}
@@ -410,6 +418,12 @@ export default function RequestDetailPage() {
                                     return entry.changed_by ? `Пользователь #${entry.changed_by}` : "—";
                                 };
 
+                                // Проверяем, является ли это отказом в согласовании
+                                const isRejection = entry.action && (
+                                    entry.action.includes("Отказ в согласовании") || 
+                                    entry.action.includes("Отмена подтверждения")
+                                );
+
                                 return (
                                     <div
                                         key={entry.id}
@@ -418,9 +432,17 @@ export default function RequestDetailPage() {
                                         {index < request.status_history.length - 1 && (
                                             <div className="absolute left-[11px] top-8 bottom-0 w-0.5 bg-[#E5E7EB]"></div>
                                         )}
-                                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#DBEAFE] border-2 border-white flex items-center justify-center relative z-10">
-                                            <div className="w-2 h-2 rounded-full bg-[#1E40AF]"></div>
-                                        </div>
+                                        {isRejection ? (
+                                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#FEE2E2] border-2 border-white flex items-center justify-center relative z-10">
+                                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M9 3L3 9M3 3L9 9" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                </svg>
+                                            </div>
+                                        ) : (
+                                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#DBEAFE] border-2 border-white flex items-center justify-center relative z-10">
+                                                <div className="w-2 h-2 rounded-full bg-[#1E40AF]"></div>
+                                            </div>
+                                        )}
                                         <div className="flex-1 flex flex-col gap-2 pb-4">
                                             <div className="flex items-start justify-between gap-3">
                                                 <div className="flex flex-col gap-1">
