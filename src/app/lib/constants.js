@@ -29,6 +29,7 @@ export const RequestStatus = {
   ACCOUNTANT_PAID: 'accountant_paid',                    // 5. Бухгалтер отметил как оплачено
   FOREMAN_CONFIRMED_RECEIPT: 'foreman_confirmed_receipt', // 6. Прораб подтвердил получение
   DOCUMENTS_SHIPPED: 'documents_shipped',                // 7. Отгрузка документов
+  REJECTED: 'rejected',                                  // 8. Отклонена (финальный статус)
 };
 
 // Отображаемые названия статусов
@@ -40,6 +41,7 @@ export const RequestStatusDisplay = {
   [RequestStatus.ACCOUNTANT_PAID]: 'Бухгалтер отметил как оплачено',
   [RequestStatus.FOREMAN_CONFIRMED_RECEIPT]: 'Прораб подтвердил получение материалов',
   [RequestStatus.DOCUMENTS_SHIPPED]: 'Документы отгружены',
+  [RequestStatus.REJECTED]: 'Отклонена',
 };
 
 // Матрица переходов статусов (кто может изменить статус)
@@ -69,6 +71,10 @@ export const StatusTransitionMatrix = {
     allowedRoles: null, // Любой участник объекта
   },
   [RequestStatus.DOCUMENTS_SHIPPED]: {
+    nextStatus: null, // Финальный статус
+    allowedRoles: null,
+  },
+  [RequestStatus.REJECTED]: {
     nextStatus: null, // Финальный статус
     allowedRoles: null,
   },

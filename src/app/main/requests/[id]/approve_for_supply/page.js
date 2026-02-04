@@ -113,7 +113,10 @@ export default function ApproveForSupply() {
         setError(null);
 
         try {
-            await updateRequestStatus(parseInt(params.id), "created", {
+            // Если статус created - переводим в rejected (отказ в согласовании)
+            // Если статус approved_for_supply - переводим в created (отмена утверждения)
+            const targetStatus = request.status === "created" ? "rejected" : "created";
+            await updateRequestStatus(parseInt(params.id), targetStatus, {
                 receipt_notes: rejectReason.trim(),
             });
             router.push(`/main/requests/${params.id}`);
@@ -129,6 +132,11 @@ export default function ApproveForSupply() {
             }
             if (error.response?.status === 404) {
                 setError("Заявка не найдена");
+                return;
+            }
+            if (error.response?.status === 400) {
+                const errorMessage = error.response?.data?.detail || error.response?.data?.message || "Ошибка валидации";
+                setError(errorMessage);
                 return;
             }
             setError("Ошибка при отказе в согласовании. Попробуйте еще раз.");

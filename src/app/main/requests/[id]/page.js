@@ -102,6 +102,7 @@ export default function RequestDetailPage() {
             accountant_paid: "Оплачена бухгалтером",
             foreman_confirmed_receipt: "Подтверждено получение",
             documents_shipped: "Документы отправлены",
+            rejected: "Отклонена",
         };
         return statusMap[status] || status;
     };
@@ -115,6 +116,7 @@ export default function RequestDetailPage() {
             accountant_paid: "bg-[#FEF3C7] text-[#92400E]",
             foreman_confirmed_receipt: "bg-[#E0E7FF] text-[#3730A3]",
             documents_shipped: "bg-[#D1FAE5] text-[#065F46]",
+            rejected: "bg-[#FEE2E2] text-[#991B1B]",
         };
         return colorMap[status] || "bg-[#E5E7EB] text-[#6B7280]";
     };
@@ -478,8 +480,8 @@ export default function RequestDetailPage() {
                     // Определяем pending_action на основе статуса, если он не пришел с сервера
                     const pendingAction = request.pending_action || getPendingActionByStatus(request.status);
                     
-                    // Не показываем кнопку, если статус финальный (documents_shipped)
-                    if (!pendingAction || request.status === "documents_shipped") {
+                    // Не показываем кнопку, если статус финальный (documents_shipped или rejected)
+                    if (!pendingAction || request.status === "documents_shipped" || request.status === "rejected") {
                         return null;
                     }
 
