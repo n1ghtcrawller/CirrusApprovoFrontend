@@ -215,6 +215,7 @@ export default function RequestDetailPage() {
     const getActionRoute = (action) => {
         const routeMap = {
             "Утвердить для снабжения": "approve_for_supply",
+            "Утвердить заявку для снабжения": "approve_for_supply",
             "Добавить счёт": "add_invoice",
             "Подтвердить счёт": "invoice_agreement",
             "Отметить как оплачено": "accountants_payment",
@@ -486,6 +487,7 @@ export default function RequestDetailPage() {
                                             router.push(`/main/requests/${params.id}/${route}`);
                                         } else {
                                             console.error("Неизвестное действие:", pendingAction.action);
+                                            alert(`Неизвестное действие: "${pendingAction.action}". Обратитесь к администратору.`);
                                         }
                                     }}
                                     fontSize="16"
