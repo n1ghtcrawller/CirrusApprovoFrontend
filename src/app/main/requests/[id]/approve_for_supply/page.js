@@ -255,6 +255,36 @@ export default function ApproveForSupply() {
                     </div>
                 </div>
 
+                {request.status === "created" && 
+                 (userRoleInObject === "director" || userRoleInObject === "deputy_director" || userRoleInObject === "chief_engineer") && (
+                    <div className="flex w-full flex-col gap-3 rounded-xl bg-white p-6 border-t-2 border-[#E5E7EB]">
+                        <div className="flex flex-col gap-3">
+                            <button
+                                type="button"
+                                onClick={() => router.push(`/main/requests/${params.id}/edit`)}
+                                disabled={isSubmitting || isRejecting}
+                                className="w-full rounded-xl bg-[#111827] px-5 py-3 text-base font-semibold text-white hover:bg-[#1F2937] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                style={{
+                                    fontFamily: "var(--font-onest), -apple-system, sans-serif",
+                                }}
+                            >
+                                Редактировать заявку
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setShowRejectModal(true)}
+                                disabled={isSubmitting || isRejecting}
+                                className="w-full rounded-xl bg-red-50 border border-red-200 px-5 py-3 text-base font-semibold text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                style={{
+                                    fontFamily: "var(--font-onest), -apple-system, sans-serif",
+                                }}
+                            >
+                                Отказать в согласовании
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {request.status === "approved_for_supply" && 
                  (userRoleInObject === "director" || userRoleInObject === "deputy_director" || userRoleInObject === "chief_engineer") && (
                     <div className="flex w-full flex-col gap-3 rounded-xl bg-white p-6 border-t-2 border-[#E5E7EB]">
@@ -275,15 +305,21 @@ export default function ApproveForSupply() {
                 {showRejectModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                         <div className="bg-white rounded-xl p-6 max-w-md w-full flex flex-col gap-4">
-                            <h2 className="text-xl font-bold text-[#111827]">Отмена утверждения</h2>
+                            <h2 className="text-xl font-bold text-[#111827]">
+                                {request.status === "approved_for_supply" 
+                                    ? "Отмена утверждения" 
+                                    : "Отказ в согласовании"}
+                            </h2>
                             <div className="flex flex-col gap-2">
                                 <label className="text-sm font-medium text-[#6B7280]">
-                                    Причина отмены *
+                                    Причина {request.status === "approved_for_supply" ? "отмены" : "отказа"} *
                                 </label>
                                 <textarea
                                     value={rejectReason}
                                     onChange={(e) => setRejectReason(e.target.value)}
-                                    placeholder="Укажите причину отмены утверждения заявки"
+                                    placeholder={request.status === "approved_for_supply"
+                                        ? "Укажите причину отмены утверждения заявки"
+                                        : "Укажите причину отказа в согласовании заявки"}
                                     className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent min-h-[100px] resize-y"
                                     style={{
                                         fontFamily: "var(--font-onest), -apple-system, sans-serif",
@@ -310,7 +346,11 @@ export default function ApproveForSupply() {
                                     disabled={isRejecting || !rejectReason.trim()}
                                     className="flex-1 rounded-xl bg-red-600 px-5 py-3 text-base font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {isRejecting ? "Отправка..." : "Отменить утверждение"}
+                                    {isRejecting 
+                                        ? "Отправка..." 
+                                        : (request.status === "approved_for_supply" 
+                                            ? "Отменить утверждение" 
+                                            : "Отказать в согласовании")}
                                 </button>
                             </div>
                         </div>
