@@ -1,9 +1,10 @@
 "use client";
 import { useRouter, useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
 import CustomButton from "../../../../components/СustomButton";
 import { getRequestWithRelations, uploadDocument, uploadDocumentsBatch, updateRequestStatus } from "../../../../lib/api";
+import { FaFilePdf, FaPlus, FaTimes } from "react-icons/fa";
 
 export default function AddInvoice() {
     const router = useRouter();
@@ -16,6 +17,7 @@ export default function AddInvoice() {
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
     const [isRejecting, setIsRejecting] = useState(false);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         const loadRequest = async () => {
@@ -44,26 +46,40 @@ export default function AddInvoice() {
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files || []);
-        if (files.length === 0) {
-            setSelectedFiles([]);
+        if (files.length === 0) return;
+
+        // Фильтруем только PDF файлы
+        const pdfFiles = files.filter(file => file.type === 'application/pdf');
+        if (pdfFiles.length !== files.length) {
+            setError("Поддерживается только формат PDF");
             return;
         }
 
-        // Проверка количества файлов (макс 20)
-        if (files.length > 20) {
-            setError("Можно загрузить не более 20 файлов за раз");
+        // Проверка общего количества файлов (макс 20)
+        const totalFiles = selectedFiles.length + pdfFiles.length;
+        if (totalFiles > 20) {
+            setError(`Можно загрузить не более 20 файлов. Уже выбрано: ${selectedFiles.length}`);
             return;
         }
 
         // Проверка размера каждого файла (макс 10 МБ)
-        const invalidFiles = files.filter(file => file.size > 10 * 1024 * 1024);
+        const invalidFiles = pdfFiles.filter(file => file.size > 10 * 1024 * 1024);
         if (invalidFiles.length > 0) {
             setError(`Размер файла "${invalidFiles[0].name}" превышает 10 МБ`);
             return;
         }
 
-        setSelectedFiles(files);
+        setSelectedFiles(prev => [...prev, ...pdfFiles]);
         setError(null);
+        
+        // Сбрасываем input для повторного выбора тех же файлов
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const handleRemoveFile = (index) => {
+        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleSubmit = async (e) => {
@@ -213,38 +229,65 @@ export default function AddInvoice() {
                     )}
 
                     <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-3">
                             <label className="text-sm font-medium text-[#6B7280]">
                                 Файл(ы) счета *
                             </label>
+                            
+                            {/* Скрытый input для выбора файлов */}
                             <input
                                 type="file"
+                                ref={fileInputRef}
                                 onChange={handleFileChange}
-                                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                accept=".pdf,application/pdf"
                                 multiple
-                                className="w-full rounded-xl bg-white border border-[#E5E7EB] px-4 py-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#135bec] focus:ring-offset-0"
-                                style={{
-                                    fontFamily: "var(--font-onest), -apple-system, sans-serif",
-                                }}
+                                className="hidden"
                                 disabled={isSubmitting}
-                                required
                             />
-                            {selectedFiles.length > 0 && (
-                                <div className="flex flex-col gap-2 mt-2">
-                                    <span className="text-sm font-medium text-[#6B7280]">
-                                        Выбрано файлов: {selectedFiles.length}
-                                    </span>
-                                    <div className="flex flex-col gap-1 max-h-32 overflow-y-auto">
-                                        {selectedFiles.map((file, index) => (
-                                            <span key={index} className="text-xs text-[#6B7280]">
-                                                • {file.name} ({(file.size / 1024).toFixed(1)} КБ)
-                                            </span>
-                                        ))}
+                            
+                            {/* Сетка с файлами и кнопкой добавления */}
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                {/* Выбранные файлы */}
+                                {selectedFiles.map((file, index) => (
+                                    <div
+                                        key={index}
+                                        className="relative aspect-square rounded-xl bg-[#FEE2E2] border-2 border-[#FECACA] flex flex-col items-center justify-center p-2 group"
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveFile(index)}
+                                            disabled={isSubmitting}
+                                            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50 shadow-md"
+                                        >
+                                            <FaTimes size={12} />
+                                        </button>
+                                        <FaFilePdf className="text-[#DC2626] text-3xl mb-1" />
+                                        <span className="text-[10px] text-[#991B1B] text-center line-clamp-2 leading-tight px-1">
+                                            {file.name}
+                                        </span>
+                                        <span className="text-[9px] text-[#B91C1C] mt-0.5">
+                                            {(file.size / 1024).toFixed(0)} КБ
+                                        </span>
                                     </div>
-                                </div>
-                            )}
+                                ))}
+                                
+                                {/* Кнопка добавления PDF */}
+                                {selectedFiles.length < 20 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={isSubmitting}
+                                        className="aspect-square rounded-xl border-2 border-dashed border-[#D1D5DB] bg-[#F9FAFB] hover:border-[#3B82F6] hover:bg-[#EFF6FF] transition-colors flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <FaPlus className="text-[#9CA3AF] text-xl" />
+                                        <span className="text-xs text-[#6B7280] font-medium">Добавить</span>
+                                        <span className="text-xs text-[#9CA3AF]">PDF</span>
+                                    </button>
+                                )}
+                            </div>
+                            
                             <span className="text-xs text-[#9CA3AF]">
-                                Поддерживаемые форматы: PDF, JPG, PNG, DOC, DOCX. Максимальный размер файла: 10 МБ. Можно загрузить до 20 файлов за раз.
+                                Поддерживается только формат PDF. Максимальный размер файла: 10 МБ. Можно загрузить до 20 файлов.
                             </span>
                         </div>
                     </div>
