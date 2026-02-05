@@ -1,9 +1,14 @@
 "use client";
 import { useRouter, useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
 import CustomButton from "../../../../components/СustomButton";
-import { getRequestWithRelations, updateForemanReceipt } from "../../../../lib/api";
+import { getRequestWithRelations, updateForemanReceipt, uploadShippingPhotos } from "../../../../lib/api";
+
+// Допустимые типы изображений
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic'];
+const MAX_PHOTOS = 20;
 
 export default function ForemanAgreement() {
     const router = useRouter();
@@ -13,6 +18,13 @@ export default function ForemanAgreement() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
+    
+    // Состояние для фотографий отгрузки
+    const [selectedPhotos, setSelectedPhotos] = useState([]);
+    const [photoPreviews, setPhotoPreviews] = useState([]);
+    const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+    const [photoError, setPhotoError] = useState(null);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         const loadRequest = async () => {
@@ -51,6 +63,84 @@ export default function ForemanAgreement() {
 
     const handleReceivedQuantityChange = (itemId, value) => {
         setReceivedQuantities((prev) => ({ ...prev, [itemId]: value }));
+    };
+
+    // Обработка выбора фотографий
+    const handlePhotoSelect = (e) => {
+        const files = Array.from(e.target.files || []);
+        setPhotoError(null);
+        
+        // Фильтруем только допустимые типы изображений
+        const validFiles = files.filter(file => ALLOWED_IMAGE_TYPES.includes(file.type));
+        
+        if (validFiles.length !== files.length) {
+            setPhotoError("Некоторые файлы были пропущены. Допустимы только изображения: JPEG, PNG, GIF, WebP, HEIC");
+        }
+        
+        // Проверяем лимит
+        const totalPhotos = selectedPhotos.length + validFiles.length;
+        if (totalPhotos > MAX_PHOTOS) {
+            setPhotoError(`Максимум ${MAX_PHOTOS} фотографий. Выбрано: ${totalPhotos}`);
+            return;
+        }
+        
+        // Добавляем новые файлы
+        setSelectedPhotos(prev => [...prev, ...validFiles]);
+        
+        // Создаём превью для новых файлов
+        validFiles.forEach(file => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPhotoPreviews(prev => [...prev, { file, preview: reader.result }]);
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        // Сбрасываем input для возможности повторного выбора тех же файлов
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    // Удаление фотографии из списка
+    const handleRemovePhoto = (index) => {
+        setSelectedPhotos(prev => prev.filter((_, i) => i !== index));
+        setPhotoPreviews(prev => prev.filter((_, i) => i !== index));
+    };
+
+    // Загрузка фотографий на сервер
+    const handleUploadPhotos = async () => {
+        if (selectedPhotos.length === 0) return;
+        
+        setIsUploadingPhotos(true);
+        setPhotoError(null);
+        
+        try {
+            await uploadShippingPhotos(parseInt(params.id), selectedPhotos);
+            // Очищаем выбранные фотографии после успешной загрузки
+            setSelectedPhotos([]);
+            setPhotoPreviews([]);
+            // Перезагружаем заявку, чтобы увидеть загруженные документы
+            const data = await getRequestWithRelations(parseInt(params.id));
+            setRequest(data);
+        } catch (error) {
+            console.error("Ошибка загрузки фотографий:", error);
+            if (error.response?.status === 401) {
+                window.location.href = '/';
+                return;
+            }
+            if (error.response?.status === 403) {
+                setPhotoError("Нет доступа для загрузки фотографий");
+                return;
+            }
+            if (error.response?.status === 400) {
+                setPhotoError(error.response?.data?.detail || "Ошибка при загрузке фотографий");
+                return;
+            }
+            setPhotoError("Ошибка при загрузке фотографий. Попробуйте еще раз.");
+        } finally {
+            setIsUploadingPhotos(false);
+        }
     };
 
     const handleConfirmReceipt = async () => {
@@ -199,6 +289,100 @@ export default function ForemanAgreement() {
                         </div>
                     </div>
                 )}
+
+                {/* Секция загрузки фотографий отгрузки */}
+                <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
+                    <h2 className="text-xl font-bold text-[#111827]">Фотографии отгрузки</h2>
+                    <p className="text-sm text-[#6B7280]">
+                        Загрузите фотографии полученных материалов (до {MAX_PHOTOS} фото). 
+                        Допустимые форматы: JPEG, PNG, GIF, WebP, HEIC.
+                    </p>
+                    
+                    {/* Превью выбранных фотографий */}
+                    {photoPreviews.length > 0 && (
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                            {photoPreviews.map((item, index) => (
+                                <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-[#f6f6f8]">
+                                    <Image
+                                        src={item.preview}
+                                        alt={`Фото ${index + 1}`}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemovePhoto(index)}
+                                        disabled={isUploadingPhotos}
+                                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50"
+                                    >
+                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    
+                    {photoError && (
+                        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
+                            {photoError}
+                        </div>
+                    )}
+                    
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handlePhotoSelect}
+                            accept="image/jpeg,image/png,image/gif,image/webp,image/heic"
+                            multiple
+                            className="hidden"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploadingPhotos || selectedPhotos.length >= MAX_PHOTOS}
+                            className="flex-1 rounded-xl bg-[#f6f6f8] border border-[#E5E7EB] px-5 py-3 text-base font-semibold text-[#6B7280] hover:bg-[#eee] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            style={{ fontFamily: "var(--font-onest), -apple-system, sans-serif" }}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17.5 12.5V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M14.1667 6.66667L10 2.5L5.83334 6.66667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M10 2.5V12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            Выбрать фото
+                        </button>
+                        
+                        {selectedPhotos.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={handleUploadPhotos}
+                                disabled={isUploadingPhotos}
+                                className="flex-1 rounded-xl bg-[#3B82F6] px-5 py-3 text-base font-semibold text-white hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                style={{ fontFamily: "var(--font-onest), -apple-system, sans-serif" }}
+                            >
+                                {isUploadingPhotos ? (
+                                    <>
+                                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Загрузка...
+                                    </>
+                                ) : (
+                                    <>Загрузить ({selectedPhotos.length})</>
+                                )}
+                            </button>
+                        )}
+                    </div>
+                    
+                    {selectedPhotos.length > 0 && (
+                        <p className="text-xs text-[#9CA3AF]">
+                            Выбрано фотографий: {selectedPhotos.length} из {MAX_PHOTOS}
+                        </p>
+                    )}
+                </div>
 
                 {error && (
                     <div className="w-full rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">

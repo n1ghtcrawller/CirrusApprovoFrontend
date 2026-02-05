@@ -392,6 +392,30 @@ export const uploadDocumentsBatch = async (requestId, files, documentType = "inv
 };
 
 /**
+ * Загрузка фотографий отгрузочных материалов прорабом
+ * Доступно только прорабу (роль FOREMAN) для заявок со статусом 
+ * «Оплачено бухгалтером» (ACCOUNTANT_PAID) или «Прораб подтвердил получение» (FOREMAN_CONFIRMED_RECEIPT).
+ * Принимает только изображения: JPEG, PNG, GIF, WebP, HEIC.
+ * Не более 20 фотографий за один запрос.
+ * @param {number} requestId - ID заявки
+ * @param {File[]} files - Массив файлов изображений
+ * @returns {Promise<Array>} - Список созданных документов с типом shipping_photo
+ */
+export const uploadShippingPhotos = async (requestId, files) => {
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append('files', file);
+  });
+  
+  const response = await apiClient.post(`/requests/${requestId}/documents/shipping-photos`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+/**
  * Получение всех документов заявки
  * @param {number} requestId - ID заявки
  * @returns {Promise<Array>}
