@@ -2,11 +2,12 @@
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { getRequestWithRelations, openDocument, deleteDocument, getCurrentUser, getObjectWithMembers, getObjectMembers } from "../../../lib/api";
+import { getRequestWithRelations, openDocument, deleteDocument, getCurrentUser, getObjectWithMembers, getObjectMembers, getDocumentViewUrl } from "../../../lib/api";
 import CustomButton from "../../../components/СustomButton";
 import Comments from "../../../components/Comments";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
 import PencilIcon from "../../../assets/images/pencil.svg";
+import { FaTimes } from "react-icons/fa";
 
 
 export default function RequestDetailPage() {
@@ -16,6 +17,9 @@ export default function RequestDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState(null);
     const [userRoleInObject, setUserRoleInObject] = useState(null);
+    
+    // Состояние для модального окна просмотра изображений
+    const [imageModal, setImageModal] = useState({ isOpen: false, url: null, name: null });
 
     useEffect(() => {
         const loadRequest = async () => {
@@ -142,12 +146,15 @@ export default function RequestDetailPage() {
             // Открываем PDF на отдельной странице
             router.push(`/main/requests/${params.id}/document/${doc.id}`);
         } else if (isImage) {
-            // Для изображений открываем напрямую в новой вкладке
+            // Для изображений открываем в модальном окне
             try {
-                console.log("Открытие изображения:", doc);
-                await openDocument(doc.id, doc.name, doc.file_type);
+                const viewData = await getDocumentViewUrl(doc.id);
+                const viewUrl = typeof viewData === 'string' ? viewData : (viewData.url || viewData.view_url);
+                if (viewUrl) {
+                    setImageModal({ isOpen: true, url: viewUrl, name: doc.name });
+                }
             } catch (error) {
-                console.error("Ошибка при открытии изображения:", error);
+                console.error("Ошибка при получении URL изображения:", error);
                 alert("Не удалось открыть изображение. Попробуйте позже.");
             }
         } else {
@@ -549,6 +556,43 @@ export default function RequestDetailPage() {
                 {/* Комментарии */}
                 <Comments requestId={parseInt(params.id)} />
             </div>
+
+            {/* Модальное окно для просмотра изображений */}
+            {imageModal.isOpen && (
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
+                    onClick={() => setImageModal({ isOpen: false, url: null, name: null })}
+                >
+                    <div 
+                        className="relative max-w-full max-h-full"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            onClick={() => setImageModal({ isOpen: false, url: null, name: null })}
+                            className="absolute -top-3 -right-3 w-10 h-10 rounded-full bg-white text-gray-800 flex items-center justify-center hover:bg-gray-100 transition-colors shadow-lg z-10"
+                        >
+                            <FaTimes size={20} />
+                        </button>
+                        <div className="bg-white rounded-xl overflow-hidden shadow-2xl">
+                            {imageModal.name && (
+                                <div className="px-4 py-3 border-b border-gray-200">
+                                    <span className="text-sm font-medium text-gray-700 truncate block">
+                                        {imageModal.name}
+                                    </span>
+                                </div>
+                            )}
+                            <div className="relative">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={imageModal.url}
+                                    alt={imageModal.name || "Изображение"}
+                                    className="max-w-[90vw] max-h-[80vh] object-contain"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }
