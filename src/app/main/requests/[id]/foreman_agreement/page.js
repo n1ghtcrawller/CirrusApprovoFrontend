@@ -5,6 +5,7 @@ import Image from "next/image";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
 import CustomButton from "../../../../components/СustomButton";
 import { getRequestWithRelations, updateForemanReceipt, uploadShippingPhotos } from "../../../../lib/api";
+import { FaPlus, FaTimes, FaCamera } from "react-icons/fa";
 
 // Допустимые типы изображений
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic'];
@@ -293,36 +294,56 @@ export default function ForemanAgreement() {
                 {/* Секция загрузки фотографий отгрузки */}
                 <div className="flex w-full flex-col gap-4 rounded-xl bg-white p-6">
                     <h2 className="text-xl font-bold text-[#111827]">Фотографии отгрузки</h2>
-                    <p className="text-sm text-[#6B7280]">
-                        Загрузите фотографии полученных материалов (до {MAX_PHOTOS} фото). 
-                        Допустимые форматы: JPEG, PNG, GIF, WebP, HEIC.
-                    </p>
                     
-                    {/* Превью выбранных фотографий */}
-                    {photoPreviews.length > 0 && (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                            {photoPreviews.map((item, index) => (
-                                <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-[#f6f6f8]">
-                                    <Image
-                                        src={item.preview}
-                                        alt={`Фото ${index + 1}`}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemovePhoto(index)}
-                                        disabled={isUploadingPhotos}
-                                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50"
-                                    >
-                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    {/* Скрытый input для выбора файлов */}
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handlePhotoSelect}
+                        accept="image/jpeg,image/png,image/gif,image/webp,image/heic"
+                        multiple
+                        className="hidden"
+                    />
+                    
+                    {/* Сетка с превью фотографий и кнопкой добавления */}
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                        {/* Превью выбранных фотографий */}
+                        {photoPreviews.map((item, index) => (
+                            <div
+                                key={index}
+                                className="relative aspect-square rounded-xl overflow-hidden bg-[#f6f6f8] border-2 border-[#E5E7EB]"
+                            >
+                                <Image
+                                    src={item.preview}
+                                    alt={`Фото ${index + 1}`}
+                                    fill
+                                    className="object-cover"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemovePhoto(index)}
+                                    disabled={isUploadingPhotos}
+                                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50 shadow-md z-10"
+                                >
+                                    <FaTimes size={12} />
+                                </button>
+                            </div>
+                        ))}
+                        
+                        {/* Кнопка добавления фото */}
+                        {selectedPhotos.length < MAX_PHOTOS && (
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploadingPhotos}
+                                className="aspect-square rounded-xl border-2 border-dashed border-[#D1D5DB] bg-[#F9FAFB] hover:border-[#3B82F6] hover:bg-[#EFF6FF] transition-colors flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <FaCamera className="text-[#9CA3AF] text-xl" />
+                                <span className="text-xs text-[#6B7280] font-medium">Добавить</span>
+                                <span className="text-xs text-[#9CA3AF]">фото</span>
+                            </button>
+                        )}
+                    </div>
                     
                     {photoError && (
                         <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
@@ -330,36 +351,16 @@ export default function ForemanAgreement() {
                         </div>
                     )}
                     
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handlePhotoSelect}
-                            accept="image/jpeg,image/png,image/gif,image/webp,image/heic"
-                            multiple
-                            className="hidden"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploadingPhotos || selectedPhotos.length >= MAX_PHOTOS}
-                            className="flex-1 rounded-xl bg-[#f6f6f8] border border-[#E5E7EB] px-5 py-3 text-base font-semibold text-[#6B7280] hover:bg-[#eee] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            style={{ fontFamily: "var(--font-onest), -apple-system, sans-serif" }}
-                        >
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M17.5 12.5V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M14.1667 6.66667L10 2.5L5.83334 6.66667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M10 2.5V12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            Выбрать фото
-                        </button>
-                        
-                        {selectedPhotos.length > 0 && (
+                    {selectedPhotos.length > 0 && (
+                        <div className="flex flex-col gap-3">
+                            <p className="text-xs text-[#9CA3AF]">
+                                Выбрано: {selectedPhotos.length} из {MAX_PHOTOS}. Форматы: JPEG, PNG, GIF, WebP, HEIC.
+                            </p>
                             <button
                                 type="button"
                                 onClick={handleUploadPhotos}
                                 disabled={isUploadingPhotos}
-                                className="flex-1 rounded-xl bg-[#3B82F6] px-5 py-3 text-base font-semibold text-white hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full rounded-xl bg-[#3B82F6] px-5 py-3 text-base font-semibold text-white hover:bg-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 style={{ fontFamily: "var(--font-onest), -apple-system, sans-serif" }}
                             >
                                 {isUploadingPhotos ? (
@@ -371,15 +372,15 @@ export default function ForemanAgreement() {
                                         Загрузка...
                                     </>
                                 ) : (
-                                    <>Загрузить ({selectedPhotos.length})</>
+                                    <>Загрузить фото ({selectedPhotos.length})</>
                                 )}
                             </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
                     
-                    {selectedPhotos.length > 0 && (
+                    {selectedPhotos.length === 0 && (
                         <p className="text-xs text-[#9CA3AF]">
-                            Выбрано фотографий: {selectedPhotos.length} из {MAX_PHOTOS}
+                            Форматы: JPEG, PNG, GIF, WebP, HEIC. До {MAX_PHOTOS} фотографий.
                         </p>
                     )}
                 </div>
