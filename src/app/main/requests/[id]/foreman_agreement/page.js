@@ -147,8 +147,14 @@ export default function ForemanAgreement() {
     const handleConfirmReceipt = async () => {
         setIsSubmitting(true);
         setError(null);
+        setPhotoError(null);
 
         try {
+            // Если есть выбранные фотографии - загружаем их параллельно с подтверждением
+            const uploadPromise = selectedPhotos.length > 0 
+                ? uploadShippingPhotos(parseInt(params.id), selectedPhotos)
+                : Promise.resolve();
+
             // Формируем массив с delta (получено в этот раз)
             const items = (request.items || []).map((item) => {
                 const raw = receivedQuantities[item.id];
@@ -162,7 +168,17 @@ export default function ForemanAgreement() {
                     received_quantity: Number.isFinite(num) && num >= 0 ? num : 0 
                 };
             });
-            const updated = await updateForemanReceipt(parseInt(params.id), items);
+            
+            // Выполняем оба запроса параллельно
+            const [updated] = await Promise.all([
+                updateForemanReceipt(parseInt(params.id), items),
+                uploadPromise
+            ]);
+            
+            // Очищаем фотографии после успешной загрузки
+            setSelectedPhotos([]);
+            setPhotoPreviews([]);
+            
             setRequest(updated);
             router.push(`/main/requests/${params.id}`);
         } catch (error) {
@@ -306,24 +322,26 @@ export default function ForemanAgreement() {
                     />
                     
                     {/* Сетка с превью фотографий и кнопкой добавления */}
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 pt-1 pr-1">
                         {/* Превью выбранных фотографий */}
                         {photoPreviews.map((item, index) => (
                             <div
                                 key={index}
-                                className="relative aspect-square rounded-xl overflow-hidden bg-[#f6f6f8] border-2 border-[#E5E7EB]"
+                                className="relative aspect-square"
                             >
-                                <Image
-                                    src={item.preview}
-                                    alt={`Фото ${index + 1}`}
-                                    fill
-                                    className="object-cover"
-                                />
+                                <div className="absolute inset-0 rounded-xl overflow-hidden bg-[#f6f6f8] border-2 border-[#E5E7EB]">
+                                    <Image
+                                        src={item.preview}
+                                        alt={`Фото ${index + 1}`}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                </div>
                                 <button
                                     type="button"
                                     onClick={() => handleRemovePhoto(index)}
                                     disabled={isUploadingPhotos}
-                                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50 shadow-md z-10"
+                                    className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50 shadow-md z-10"
                                 >
                                     <FaTimes size={12} />
                                 </button>

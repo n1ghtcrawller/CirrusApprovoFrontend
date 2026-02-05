@@ -133,12 +133,23 @@ export default function RequestDetailPage() {
         e.preventDefault();
         e.stopPropagation();
         
-        // Проверяем тип файла - для PDF открываем на отдельной странице, для остальных используем старый способ
+        // Проверяем тип файла
         const isPdf = doc.file_type?.includes('pdf') || doc.name?.toLowerCase().endsWith('.pdf');
+        const isImage = doc.file_type?.startsWith('image/') || 
+            /\.(jpg|jpeg|png|gif|webp|heic)$/i.test(doc.name || '');
         
         if (isPdf) {
             // Открываем PDF на отдельной странице
             router.push(`/main/requests/${params.id}/document/${doc.id}`);
+        } else if (isImage) {
+            // Для изображений открываем напрямую в новой вкладке
+            try {
+                console.log("Открытие изображения:", doc);
+                await openDocument(doc.id, doc.name, doc.file_type);
+            } catch (error) {
+                console.error("Ошибка при открытии изображения:", error);
+                alert("Не удалось открыть изображение. Попробуйте позже.");
+            }
         } else {
             // Для других типов файлов используем старый способ
             try {
@@ -369,6 +380,7 @@ export default function RequestDetailPage() {
                                 const getDocumentTypeLabel = (type) => {
                                     if (type === "invoice") return "Счёт";
                                     if (type === "shipment") return "Отгрузка";
+                                    if (type === "shipping_photo") return "Фото мат-ов";
                                     return type;
                                 };
                                 
