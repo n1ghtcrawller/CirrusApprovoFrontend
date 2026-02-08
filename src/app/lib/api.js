@@ -222,6 +222,24 @@ export const getObjectMembers = async (objectId) => {
   return response.data;
 };
 
+/**
+ * Аналитика по объекту
+ * @param {number} objectId - ID объекта
+ * @param {Object} params - Query-параметры
+ * @param {number} [params.year] - Фильтр по году (например, 2025)
+ * @param {string} [params.group_by] - "month" | "year" — группировка для by_period (по умолчанию "month")
+ * @returns {Promise<Object>} - { summary, by_material, by_creator, by_period }
+ */
+export const getObjectAnalytics = async (objectId, params = {}) => {
+  const searchParams = new URLSearchParams();
+  if (params.year != null) searchParams.append('year', params.year.toString());
+  if (params.group_by) searchParams.append('group_by', params.group_by);
+  const query = searchParams.toString();
+  const url = `/objects/${objectId}/analytics${query ? `?${query}` : ''}`;
+  const response = await apiClient.get(url);
+  return response.data;
+};
+
 // ==================== ЗАЯВКИ ====================
 
 /**

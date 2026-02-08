@@ -296,7 +296,22 @@ export default function ProjectDetailsPage() {
                                 </div>
                             )}
                         </div>
+                        <button
+                            onClick={() => router.push(`/main/projects/${params.id}/analytics`)}
+                            className="w-full mt-4 rounded-xl bg-[#111827] px-6 py-3 text-center text-white text-sm font-medium hover:bg-[#1F2937] transition-colors"
+                        >
+                            Аналитика
+                        </button>
                     </div>
+                )}
+
+                {(!project.planned_budget && !project.actual_spent) && (
+                    <button
+                        onClick={() => router.push(`/main/projects/${params.id}/analytics`)}
+                        className="w-full rounded-xl bg-white px-6 py-4 text-left hover:shadow-md transition-all"
+                    >
+                        <span className="text-lg font-semibold text-[#111827]">Аналитика</span>
+                    </button>
                 )}
 
                 <div className="flex w-full flex-col gap-6">
