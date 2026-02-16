@@ -1,7 +1,9 @@
 "use client";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import plus from "../../../assets/components/plus.svg";
+import EditPencilIcon from "../../../assets/components/edit-pencil.svg";
 import Search from "../../../components/Search";
 import RequestList from "../../../components/RequestList";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
@@ -209,8 +211,9 @@ export default function ProjectDetailsPage() {
                 {userRoleInObject === "director" && !isEditing && (
                     <button
                         onClick={handleStartEdit}
-                        className="flex-shrink-0 px-4 py-2 rounded-xl bg-[#111827] text-white text-sm font-medium hover:bg-[#1F2937] transition-colors"
+                        className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-[#111827] text-white text-sm font-medium hover:bg-[#1F2937] transition-colors"
                     >
+                        <Image src={EditPencilIcon} alt="" width={16} height={16} className="flex-shrink-0" />
                         Редактировать
                     </button>
                 )}

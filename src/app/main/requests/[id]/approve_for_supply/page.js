@@ -1,9 +1,11 @@
 "use client";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
 import CustomButton from "../../../../components/СustomButton";
 import { getRequestWithRelations, updateRequestStatus, getCurrentUser, getObjectWithMembers, getObjectMembers } from "../../../../lib/api";
+import EditPencilIcon from "../../../../assets/components/edit-pencil.svg";
 
 export default function ApproveForSupply() {
     const router = useRouter();
@@ -264,18 +266,19 @@ export default function ApproveForSupply() {
                 </div>
 
                 {request.status === "created" && 
-                 (userRoleInObject === "director" || userRoleInObject === "deputy_director" || userRoleInObject === "chief_engineer") && (
+                 (userRoleInObject === "director" || userRoleInObject === "deputy_director" || userRoleInObject === "chief_engineer" || userRoleInObject === "foreman") && (
                     <div className="flex w-full flex-col gap-3 rounded-xl bg-white p-6 border-t-2 border-[#E5E7EB]">
                         <div className="flex flex-col gap-3">
                             <button
                                 type="button"
                                 onClick={() => router.push(`/main/requests/${params.id}/edit`)}
                                 disabled={isSubmitting || isRejecting}
-                                className="w-full rounded-xl bg-[#111827] px-5 py-3 text-base font-semibold text-white hover:bg-[#1F2937] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center justify-center gap-2 w-full rounded-xl bg-[#111827] px-5 py-3 text-base font-semibold text-white hover:bg-[#1F2937] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{
                                     fontFamily: "var(--font-onest), -apple-system, sans-serif",
                                 }}
                             >
+                                <Image src={EditPencilIcon} alt="" width={20} height={20} className="flex-shrink-0" />
                                 Редактировать заявку
                             </button>
                             <button
@@ -294,7 +297,7 @@ export default function ApproveForSupply() {
                 )}
 
                 {request.status === "approved_for_supply" && 
-                 (userRoleInObject === "director" || userRoleInObject === "deputy_director" || userRoleInObject === "chief_engineer") && (
+                 (userRoleInObject === "director" || userRoleInObject === "deputy_director" || userRoleInObject === "chief_engineer" || userRoleInObject === "foreman") && (
                     <div className="flex w-full flex-col gap-3 rounded-xl bg-white p-6 border-t-2 border-[#E5E7EB]">
                         <button
                             type="button"

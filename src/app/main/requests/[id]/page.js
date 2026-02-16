@@ -7,6 +7,7 @@ import CustomButton from "../../../components/СustomButton";
 import Comments from "../../../components/Comments";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
 import PencilIcon from "../../../assets/images/pencil.svg";
+import EditPencilIcon from "../../../assets/components/edit-pencil.svg";
 import { FaTimes } from "react-icons/fa";
 
 
@@ -283,12 +284,13 @@ export default function RequestDetailPage() {
                     <div className="flex flex-col gap-2">
                         <div className="flex items-start justify-between gap-3">
                             <h1 className="text-3xl font-bold text-[#111827]">{request.number}</h1>
-                            {(userRoleInObject === "director" || userRoleInObject === "deputy_director" || userRoleInObject === "chief_engineer") && 
+                            {(userRoleInObject === "director" || userRoleInObject === "deputy_director" || userRoleInObject === "chief_engineer" || userRoleInObject === "foreman") && 
                              (request.status === "created" || request.status === "approved_for_supply") && (
                                 <button
                                     onClick={() => router.push(`/main/requests/${params.id}/edit`)}
-                                    className="text-sm font-medium text-[#3B82F6] hover:text-[#2563EB] transition-colors whitespace-nowrap"
+                                    className="flex items-center gap-2 text-sm font-medium text-[#3B82F6] hover:text-[#2563EB] transition-colors whitespace-nowrap"
                                 >
+                                    <Image src={EditPencilIcon} alt="" width={16} height={16} className="flex-shrink-0" />
                                     Редактировать
                                 </button>
                             )}
