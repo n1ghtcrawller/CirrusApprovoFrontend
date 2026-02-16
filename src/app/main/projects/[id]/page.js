@@ -211,10 +211,10 @@ export default function ProjectDetailsPage() {
                 {userRoleInObject === "director" && !isEditing && (
                     <button
                         onClick={handleStartEdit}
-                        className="flex-shrink-0 flex items-center justify-center p-2 rounded-xl bg-[#111827] text-white hover:bg-[#1F2937] transition-colors"
+                        className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl bg-[#111827] text-white hover:bg-[#1F2937] transition-colors"
                         title="Редактировать"
                     >
-                        <Image src={EditPencilIcon} alt="Редактировать" width={24} height={24} className="flex-shrink-0" />
+                        <Image src={EditPencilIcon} alt="Редактировать" width={28} height={28} className="flex-shrink-0" />
                     </button>
                 )}
                 {isEditing && (
