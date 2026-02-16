@@ -5,7 +5,7 @@ import Image from "next/image";
 import TelegramBackButton from "@/app/components/TelegramBackButton";
 import CustomButton from "../../../../components/СustomButton";
 import { getRequestWithRelations, updateRequestStatus, getCurrentUser, getObjectWithMembers, getObjectMembers } from "../../../../lib/api";
-import EditPencilIcon from "../../../../assets/components/edit-pencil.svg";
+import EditPencilIcon from "../../../../assets/components/white-edit-pencil.svg";
 
 export default function ApproveForSupply() {
     const router = useRouter();
